@@ -1,0 +1,20 @@
+politica de desalojo:
+desalojar la clave valor menos usada, con la stat mas baja?
+Prob sea la mas reciente, pero es cierto que llevar una cola para desalojar la primera
+relentizaria mucho el programa
+
+Tenemos la memoria que va a usar el programa definida en una constante en algun lado
+
+Usar esa definicion de memoria para hacer un calculo correcto del tamaño (size) de la tabla hash
+
+Usar una tabla hash de tamaño (Size),
+resolver colisiones usando arboles.
+Cada elemento de la tabla tiene un lock (Size locks)
+
+Uso de memoria y desalojo:
+Queue de punteros a los nodos en el orden en el que los guardamos
+Cada vez que se accede a memoria, se mueve el puntero al principio de la lista (cambiando los punteros anterior y sig)
+El elemento del final de la lista es el mas antiguo y menos accedido, por lo q es el cual eliminamos.
+
+Usar una estructura de epoll para recuperar los msjes de tcp
+
