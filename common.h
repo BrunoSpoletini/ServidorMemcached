@@ -9,7 +9,8 @@
 #define MAX_CLIENTS 256
 #define TIMEOUT 100
 #define MAX_THREADS 4
-
+#define TEXT_PORT 8888
+#define BIN_PORT
 enum code {
 	PUT = 11,
 	DEL = 12,

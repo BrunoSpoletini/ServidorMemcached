@@ -147,34 +147,11 @@ int handle_conn(int csock)
 	return 0;
 }
 
-void re_agregarClienteEpoll(int csock, int epoll_fd){
-	// Registro el socket del cliente en epoll
-	struct epoll_event ev;
-	ev.events = EPOLLIN | EPOLLONESHOT;
-	ev.data.fd = csock;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, csock, &ev))
-	{
-		close(epoll_fd);
-		quit("Fallo al agregar fd a epoll\n");
-	}
-}
 
-void agregarClienteEpoll(int csock, int epoll_fd){
-	// Registro el socket del cliente en epoll
-	struct epoll_event ev;
-	ev.events = EPOLLIN | EPOLLONESHOT;
-	ev.data.fd = csock;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, csock, &ev))
-	{
-		close(epoll_fd);
-		quit("Fallo al agregar fd a epoll\n");
-	}
-	write(csock, "Cliente conectado!\n", 19);
-}
 
 void *wait_for_clients(void *epoll)
 {
-	int events_count, epoll_fd = *(int*)epoll;
+	int events_count, epoll_fd = *(int*)epoll, csock;
 	struct epoll_event events[MAX_EVENTS];
 
 	while (1)
@@ -182,7 +159,7 @@ void *wait_for_clients(void *epoll)
 		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, TIMEOUT);
 		for (int i = 0; i < events_count; i++){
 			if (events[i].data.fd != lsock){
-				int csock = events[i].data.fd;
+				csock = events[i].data.fd;
 				if (handle_conn(csock) == -1)
 				{
 					if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, csock, NULL) == -1)
@@ -192,33 +169,21 @@ void *wait_for_clients(void *epoll)
 					}
 					close(csock);
 				}else{
-					re_agregarClienteEpoll(csock,epoll_fd);
+					agregarClienteEpoll(csock,epoll_fd, 0);
+				}
+			} else{
+				csock = accept(lsock, NULL, NULL);
+				if (csock == -1){
+					quit("Fallo al aceptar un cliente");
+				} else {
+					agregarClienteEpoll(csock, epoll_fd, 1);
 				}
 			}
 		}
 	}
 }
 
-/* Crea una instancia de epoll y agrega lsock a la lista de control */
-int create_epoll(int lsock)
-{
-	struct epoll_event ev;
-	int epoll_fd = epoll_create1(0);
-	if (epoll_fd == -1)
-	{
-		quit("Fallo al crear epoll fd\n");
-	}
 
-	// Registro el socket de servidor en epoll
-	ev.events = EPOLLIN;
-	ev.data.fd = lsock;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, lsock, &ev))
-	{
-		close(epoll_fd);
-		quit("Fallo al agregar fd a epoll\n");
-	}
-	return epoll_fd;
-}
 
 
 
@@ -226,21 +191,15 @@ int main(){
 	pthread_t t[MAX_THREADS];
 	initHashTable(&hTable);
 
-	lsock = lsock_tcp(8888); //Temporal (hasta tener el ejecutable de los permisos)
-
+	lsock = lsock_tcp(TEXT_PORT); //Temporal (hasta tener el ejecutable de los permisos)
 	int epoll = create_epoll(lsock);
 
 	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)&epoll);
 	}
 
-	while(1){ // Aceptamos clientes y los agregamos al epoll
-		int csock = accept(lsock, NULL, NULL);
-		if (csock == -1){
-			quit("Fallo al aceptar un cliente");
-		} else {
-			agregarClienteEpoll(csock, epoll);
-		}
+	for (int i = 0; i < MAX_THREADS; i++){
+		pthread_join(t[i], NULL);
 	}
 	return 0;
 }
