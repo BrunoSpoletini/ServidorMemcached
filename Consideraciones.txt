@@ -18,3 +18,7 @@ El elemento del final de la lista es el mas antiguo y menos accedido, por lo q e
 
 Usar una estructura de epoll para recuperar los msjes de tcp
 
+
+En cuanto a los archivos:
+hash_table.c y hash_table.h estan temporales para testear el server,
+despues vamos a hash.c y hash.h que estan en la carpeta structures.
