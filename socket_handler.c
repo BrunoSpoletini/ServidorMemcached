@@ -1,7 +1,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-//#include "common.h"
+#include "common.h"
 
 /* Crea un socket de escucha en puerto 3942 TCP */
 int lsock_tcp(int port)

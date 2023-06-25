@@ -1,3 +1,4 @@
 # Ignora los ejecutables
 *.out
+*.o
 .vscode

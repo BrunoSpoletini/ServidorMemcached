@@ -40,6 +40,7 @@ int get(HashTable* table, const char* key) {
     return -1;
 }
 
+// Revisar
 bool delete(HashTable* table, const char* key) {
     unsigned long hashValue = hash(key);
     while (table->entries[hashValue].key != NULL) {
@@ -51,6 +52,7 @@ bool delete(HashTable* table, const char* key) {
         }
         hashValue = (hashValue + 1) % table->size;
     }
+    return false;
 }
 
 void printTable(HashTable* table) {

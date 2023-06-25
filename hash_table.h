@@ -1,5 +1,5 @@
-#ifndef _HASH_TABLE
-#define _HASH_TABLE
+#ifndef _HASH_TABLE 
+#define _HASH_TABLE 1
 
 
 #include <stdio.h>
@@ -23,5 +23,4 @@ int get(HashTable* table, const char* key);
 bool delete(HashTable* table, const char* key);
 void printTable(HashTable* table);
 
-#include "hash_table.c"
 #endif

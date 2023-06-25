@@ -1,8 +1,3 @@
-#define MAX_EVENTS 256
-#define READ_SIZE 256
-#define MAX_CLIENTS 256
-#define TIMEOUT 100
-#define MAX_THREADS 4
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,6 +15,7 @@
 #include <pthread.h>
 #include "hash_table.h"
 #include "socket_handler.h"
+#include "common.h"
 
 /*
 Para inicializar la hash table:
@@ -56,12 +52,6 @@ int lsock;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 HashTable hTable;
-
-void quit(char *s)
-{
-	perror(s);
-	abort();
-}
 
 int fd_readline(int fd, char *buf)
 {
@@ -236,7 +226,7 @@ int main(){
 	pthread_t t[MAX_THREADS];
 	initHashTable(&hTable);
 
-	lsock = lsock_tcp();
+	lsock = lsock_tcp(8888); //Temporal (hasta tener el ejecutable de los permisos)
 
 	int epoll = create_epoll(lsock);
 
