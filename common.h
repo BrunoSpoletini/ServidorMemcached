@@ -9,8 +9,8 @@
 #define MAX_CLIENTS 256
 #define TIMEOUT 100
 #define MAX_THREADS 4
-#define TEXT_PORT 8888
-#define BIN_PORT
+#define MSG_SIZE 2048
+
 enum code {
 	PUT = 11,
 	DEL = 12,
@@ -27,18 +27,25 @@ enum code {
 	EOOM = 116,
 };
 
+static const int text_port = 8888;
+static const int bin_port = 8889;
+
 // Cierra el programa e imprime un mensaje de error
 void quit(char *s);
+
+/* Estructura que almacena los datos de cada fd agregado a epoll */
+typedef struct _eloop_data {
+	int fd;
+	int epfd; // file descriptor de epoll
+	int isText;
+	char buffer[MSG_SIZE];
+} eloop_data;
 
 /*
 Es lo que dio la catedra, lo vamos descomentando a medida q lo vayamos usando
 int valid_rq(int code);
 
-struct eventloop_data {
-	int epfd; // file descriptor para epoll
-	int id;
-	int n_proc;
-};
+
 
 static const in_port_t mc_lport_text = 8888;
 static const in_port_t mc_lport_bin  = 8889;

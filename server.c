@@ -14,8 +14,8 @@
 #include <string.h>	   // strtok
 #include <pthread.h>
 #include "hash_table.h"
-#include "socket_handler.h"
 #include "common.h"
+#include "socket_handler.h"
 
 /*
 Para inicializar la hash table:
@@ -100,7 +100,6 @@ int handle_conn(int csock)
 		args[i + 1] = NULL;
 		palabras++;
 	}
-
 		/* Linea vacia, se cerró la conexión */
 	if (rc == 0)
 	{
@@ -142,62 +141,71 @@ int handle_conn(int csock)
 			write(csock, clave, size);
 			write(csock, "\n", 1);
 		}
-		
 	}
 	return 0;
 }
 
-
-
-void *wait_for_clients(void *epoll)
+void *wait_for_clients(void *threadParam)
 {
-	int events_count, epoll_fd = *(int*)epoll, csock;
-	struct epoll_event events[MAX_EVENTS];
+	int events_count, epoll_fd, csock, textSock, binSock, clientReqFd, event_fd;
 
+	epoll_fd = ((int*)threadParam)[0];
+	textSock = ((int*)threadParam)[1];
+	binSock = ((int*)threadParam)[2];
+
+	struct epoll_event events[MAX_EVENTS];
 	while (1)
 	{
 		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, TIMEOUT);
 		for (int i = 0; i < events_count; i++){
-			if (events[i].data.fd != lsock){
-				csock = events[i].data.fd;
-				if (handle_conn(csock) == -1)
+			event_fd = ((eloop_data*)events[i].data.ptr)->fd;
+			if ( (event_fd == textSock) || (event_fd == binSock) ){
+				csock = accept(event_fd, NULL, NULL);
+				if (csock == -1){
+					quit("Fallo al aceptar un cliente");
+				} else {
+					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL);
+				}
+			} else {
+				clientReqFd = event_fd;
+				if (handle_conn(clientReqFd) == -1)
 				{
-					if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, csock, NULL) == -1)
+					if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, clientReqFd, NULL) == -1)
 					{
 						close(epoll_fd);
 						quit("Fallo al quitar fd de epoll\n");
 					}
-					close(csock);
+					close(clientReqFd);
 				}else{
-					agregarClienteEpoll(csock,epoll_fd, 0);
-				}
-			} else{
-				csock = accept(lsock, NULL, NULL);
-				if (csock == -1){
-					quit("Fallo al aceptar un cliente");
-				} else {
-					agregarClienteEpoll(csock, epoll_fd, 1);
+					agregarClienteEpoll(clientReqFd,epoll_fd, 0, events[i].data.ptr);
 				}
 			}
+
+
 		}
 	}
 }
 
-
-
-
-
 int main(){
 	pthread_t t[MAX_THREADS];
 	initHashTable(&hTable);
+	int textSock, binSock;
+	textSock = lsock_tcp(text_port); //Temporal (hasta tener el ejecutable de los permisos)
+	binSock = lsock_tcp(bin_port); //Temporal (hasta tener el ejecutable de los permisos)
 
-	lsock = lsock_tcp(TEXT_PORT); //Temporal (hasta tener el ejecutable de los permisos)
-	int epoll = create_epoll(lsock);
+	lsock = textSock;//Temporal
+
+	int epoll = create_epoll();
+	int threadParam[3] = {epoll, textSock, binSock}; 
+
+	agregarSocketEpoll(textSock, epoll);
+	//agregarSocketEpoll(binSock, epoll);
 
 	for (int i = 0; i < MAX_THREADS; i++){
-		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)&epoll);
+		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
 	}
 
+	// Necesario?
 	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_join(t[i], NULL);
 	}
