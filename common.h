@@ -4,12 +4,19 @@
 #include <netinet/ip.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 #define MAX_EVENTS 256
 #define READ_SIZE 256
 #define MAX_CLIENTS 256
 #define TIMEOUT 100
 #define MAX_THREADS 4
 #define MSG_SIZE 2048
+#define DEFAULT_TEXT_SOCKET 888
+#define DEFAULT_BIN_SOCKET 889
+#define DEFAULT_MEM_LIMIT 64000  /// 64 MB
+
+
 
 enum code {
 	PUT = 11,
