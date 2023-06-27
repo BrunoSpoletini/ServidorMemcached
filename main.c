@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <sys/resource.h>
 #include "common.h"
+#include "utils.h"
 
 int tsocket = DEFAULT_TEXT_SOCKET;
 int bsocket = DEFAULT_BIN_SOCKET;
