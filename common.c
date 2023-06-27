@@ -25,8 +25,8 @@ const char *code_str(enum code e)
 	}
 }
 
-void quit(char *s)
-{
+void quit(char *s){
 	perror(s);
 	abort();
 }
+

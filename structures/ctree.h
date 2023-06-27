@@ -16,7 +16,7 @@ typedef struct _CNodo {
 
 typedef CNodo *CTree;
 
-typedef void (*FuncionV) (void *nodo);
+typedef void (*FuncionDestruccion) (void *nodo);
 
 typedef char *(*FuncionObtencion) (void *dato);
 
@@ -26,21 +26,11 @@ typedef int (*FuncionComparacion) (void *dato1, void *dato2);
 CTree CTree_crear();
 
 // Destruye un arbol de intervalos.
-void ctree_destruir(CTree nodo, FuncionV liberar);
+void ctree_destruir(CTree nodo, FuncionDestruccion liberar);
 
 // Inserta un intervalo en un arbol de intervalos.
 CTree ctree_insertar(CTree raiz, void *dato, FuncionComparacion comparar,
-                     FuncionV liberar);
-
-// Determina si un intervalo se interseca con alguno de los intervalos del arbol y,
-// en caso afirmativo, retorna un apuntador al nodo correspondiente.
-CTree ctree_intersecar(CTree raiz, void *dato);
-
-// Recorrido primero en profundidad del arbol de intervalos.
-void ctree_recorrer_dfs(CTree raiz, FuncionV func);
-
-// Recibe un nodo e imprime el intervalo que este contiene.
-void imprimir_intervalo(CTree nodo);
+                     FuncionDestruccion liberar);
 
 // Devuelve un puntero al dato buscado dentro del arbol dado
 void *ctree_buscar(char *dato, CTree nodo, FuncionComparacion comparar,

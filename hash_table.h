@@ -16,6 +16,7 @@ typedef struct {
     Entry* entries;
     int size;
 } HashTable;
+
 unsigned long hash(const char* key);
 void initHashTable(HashTable* table);
 void insert(HashTable* table, const char* key, int value);

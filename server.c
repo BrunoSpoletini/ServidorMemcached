@@ -16,6 +16,7 @@
 #include "hash_table.h"
 #include "common.h"
 #include "socket_handler.h"
+#include "utils.h"
 
 /*
 Para inicializar la hash table:
@@ -46,8 +47,6 @@ Arreglar el mutex del get
 El delete deberia devolver true o false si borro o no la clave
 
  */
-
-int lsock;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -164,6 +163,7 @@ void *wait_for_clients(void *threadParam)
 				if (csock == -1){
 					quit("Fallo al aceptar un cliente");
 				} else {
+					printf("agregamos cliente\n");
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL);
 				}
 			} else {
@@ -177,6 +177,7 @@ void *wait_for_clients(void *threadParam)
 					}
 					close(clientReqFd);
 				}else{
+					printf("Agregamos cliente por primera vez\n");
 					agregarClienteEpoll(clientReqFd,epoll_fd, 0, events[i].data.ptr);
 				}
 			}
@@ -186,20 +187,19 @@ void *wait_for_clients(void *threadParam)
 	}
 }
 
-int main(){
+int main(int argc, char **argv){
+
 	pthread_t t[MAX_THREADS];
 	initHashTable(&hTable);
 	int textSock, binSock;
-	textSock = lsock_tcp(text_port); //Temporal (hasta tener el ejecutable de los permisos)
-	binSock = lsock_tcp(bin_port); //Temporal (hasta tener el ejecutable de los permisos)
-
-	lsock = textSock;//Temporal
+	textSock = atoi(argv[1]);
+	binSock = atoi(argv[2]); 
 
 	int epoll = create_epoll();
 	int threadParam[3] = {epoll, textSock, binSock}; 
 
 	agregarSocketEpoll(textSock, epoll);
-	//agregarSocketEpoll(binSock, epoll);
+	agregarSocketEpoll(binSock, epoll);
 
 	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
@@ -209,5 +209,6 @@ int main(){
 	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_join(t[i], NULL);
 	}
+
 	return 0;
 }

@@ -24,12 +24,6 @@ CTree *crear_tabla() {
   return tabla;
 }
 
-void mensaje_error(int num) {
-  if (num == 1)
-    printf("Ingrese un comando valido\n");
-  else
-    printf("No se encontró el alias buscado\n");
-}
 
 void insertar_elem_tabla(void *dato, CTree * tabla,
                          FuncionObtencion obtenerCadena,
@@ -53,3 +47,78 @@ void liberar_tabla(CTree * tabla) {
   }
   free(tabla);
 }
+
+
+int PUT(Hashtable *ht, Node *node){
+
+    int index = node->hash;
+    lock( &ht->Tlock[index] );
+
+    insertar_elem_tabla( node, ht->tree[index], equal_keys);
+
+    unlock(&ht->Tlock[Node->hash]);
+
+    return OK;
+}
+
+
+char *copy(char *s, int len){
+
+  char *c = tryalloc(len);
+  if(c == EOOM){
+    return EOOM;
+  }
+
+  strcpy(c,s);
+  
+  return c;
+}
+
+
+void* GET(Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+
+  int index = node->hash;
+
+  lock( &ht->Tlock[index] );
+
+  Node *elem = buscar_elem_tabla(node,ht->tree[index]);
+  if(elem == NULL){
+    destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
+    return ENOTFOUND;
+  }
+
+  char* retval = copy(elem->value, elem->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
+
+  unlock(&ht->Tlock[Node->hash]);
+
+  return retval;
+}
+
+
+void *evict(Hashtable *ht, unsigned bytes){
+  /// tenemos que liberar bytes de la ht, soltando por la politica de desalojo.
+
+}
+
+
+int DEL(Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+
+  int index = node->hash;
+
+  lock( &ht->Tlock[index] );
+
+  Node *elem = buscar_elem_tabla(node,ht->tree[index]);
+  if(elem == NULL){
+    destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
+    return ENOTFOUND;
+  }
+
+  ctree_eliminar(node,ht->tree[index]);
+
+  unlock(&ht->Tlock[Node->hash]);
+
+  return OK;
+}
+
+
+

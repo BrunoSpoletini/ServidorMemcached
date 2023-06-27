@@ -8,7 +8,9 @@ int lsock_tcp(int port);
 init -> 0 no es la primera vez que se registra el cliente
         1 se registra con protocolo texto
         2 se registra con protocolo binario*/
-dataPtr es un puntero a la estructura de datos del evento
+
+//dataPtr es un puntero a la estructura de datos del evento
+
 void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr);
 
 /* Registra un socket a epoll */

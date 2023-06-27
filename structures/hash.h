@@ -3,9 +3,29 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "ctree.h"
+#include "dlist.h"
+#include "stats.h"
+#include "Node.h"
 
-#define TABLESIZE  1000
+#define TABLESIZE  50000
+
+
+typedef struct {
+    CTree tree[TABLESIZE];
+    pthread_mutex_t Tlock[TABLESIZE];
+    dlist LRU;
+    pthread_mutex_t locklru;
+    Stats stats;
+}Hashtable;
+
+
+/*
+
+
+*/
+
 
 typedef char *(*FuncionObtencion) (void *dato);
 

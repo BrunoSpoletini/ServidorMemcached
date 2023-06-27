@@ -14,7 +14,7 @@
 #define MSG_SIZE 2048
 #define DEFAULT_TEXT_SOCKET 888
 #define DEFAULT_BIN_SOCKET 889
-#define DEFAULT_MEM_LIMIT 64000  /// 64 MB
+#define DEFAULT_MEM_LIMIT 1000000000  ///  1GB
 
 
 
@@ -68,5 +68,10 @@ static inline void quit(char *s)
 
 const char * error_str(enum code e);
 */
+
+
+
+
+
 
 #endif

@@ -5,10 +5,14 @@ SOURCE=server.c socket_handler.c hash_table.c common.c
 OBJ=$(SOURCE:.c=.o)
 EXE=server
 
-run: $(EXE)
-	./$(EXE)
+run: mainExec
+	./mainExec
 
-all: $(SOURCE) $(EXE)
+mainExec: main.c common.o $(EXE)
+	$(CC) main.c common.o -o mainExec
+
+all: $(SOURCE) $(EXE) 
+
 $(EXE): $(OBJ)
 	$(CC) $(OBJ) -o $@
 
@@ -16,5 +20,5 @@ $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(OBJ) $(EXE)
+	rm -rf $(OBJ) $(EXE) mainExec
 

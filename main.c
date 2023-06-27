@@ -6,14 +6,11 @@
 #include <sys/resource.h>
 #include "common.h"
 
-
-void quit(char *s){
-	perror(s);
-	abort();
-}
+int tsocket = DEFAULT_TEXT_SOCKET;
+int bsocket = DEFAULT_BIN_SOCKET;
+unsigned long mlimit = DEFAULT_MEM_LIMIT;
 
 /*
-
 Este archivo main deberia ser el primero en llamar, con permisos de sudo.
 Seteamos el limite de memoria, 
 Luego, levantamos los sockets, bajamos privilegios, y pasamos al server los sockets.
@@ -57,6 +54,7 @@ bool std_down_privileges(){
 
 	if (getuid() != 0)
 		return true;
+
 	if ( (setgid(1000) == -1) || (setuid(1000) == -1) )
 		return false;
 
@@ -66,24 +64,28 @@ bool std_down_privileges(){
     return false;
 }
 
-int tsocket = DEFAULT_TEXT_SOCKET;
-int bsocket = DEFAULT_BIN_SOCKET;
-unsigned long mlimit = DEFAULT_MEM_LIMIT;
-
-
 void parseargs(int argc, char **argv){
 
 	/// argv[0] = nombre del programa.
 	for (int i = 1; i < argc - 1; i++){
 
-		if (strcmp(argv[i], "-t") == 0)
-			tsocket = atoi(argv[i + 1]);
+		if (strcmp(argv[i], "-t") == 0){
+            tsocket = atoi(argv[i + 1]);
+            if(tsocket < 0 || tsocket > 65535)
+                quit("Puerto de socket de texto no valido\n");
+        }
 
-		if (strcmp(argv[i], "-b") == 0)
+		if (strcmp(argv[i], "-b") == 0){
 			bsocket = atoi(argv[i + 1]);
+            if(bsocket < 0 || bsocket > 65535)
+                quit("Puerto de socket binario no valido\n");
+        }
 
-		if (strcmp(argv[i], "-m") == 0)
+		if (strcmp(argv[i], "-m") == 0){
 			mlimit = atoi(argv[i + 1]);
+            if(mlimit < 0)
+                quit("Limite de memoria invalido\n");
+        }
 	}
 }
 
@@ -110,24 +112,26 @@ int main(int argc, char **argv){
 
 	free(rlimits);
 
+
+
 	if (!std_down_privileges())
         quit("No se pueden bajar los privilegios.\n");
 
 
-    /*
-    Cuando tengamos la build del server, la llamamos desde aca.
+    printf("voy al server\n");    
 
-	if (access("./build/server", F_OK) == 0)
-	{
+
+	
+    if (access("./server", F_OK) == 0){
 		// execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
-
-		execl("./build/server","./build/server", itos(text_socket), itos(bin_socket), NULL);
-	}
-	else
-	{
+        printf("Exec prev\n");
+        execl("./server" , "./server" , itos(text_socket) , itos(bin_socket), NULL); 
+        printf("Exec post\n");
+	}else{
 		quit("El server no fue buildeado");
 	}
-    */
+
+
 
 	return 0;
 }

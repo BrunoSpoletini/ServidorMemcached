@@ -4,7 +4,7 @@ CTree ctree_crear() {
   return NULL;
 }
 
-void ctree_destruir(CTree nodo, FuncionV liberar) {
+void ctree_destruir(CTree nodo, FuncionDestruccion liberar) {
   if (nodo != NULL) {
     ctree_destruir(nodo->izq, liberar);
     ctree_destruir(nodo->der, liberar);
@@ -78,7 +78,7 @@ CTree balancear(CTree nodo) {
 }
 
 CTree ctree_insertar(CTree nodo, void *dato, FuncionComparacion comparar,
-                     FuncionV liberar) {
+                     FuncionDestruccion liberar) {
   if (nodo == NULL)
     nodo = llenar_nodo(dato);
   else {
@@ -95,23 +95,6 @@ CTree ctree_insertar(CTree nodo, void *dato, FuncionComparacion comparar,
   }
 
   return nodo;
-}
-
-
-CTree buscar_sucesor(CTree nodo) {
-  CTree aux = nodo;
-
-  for (; aux->izq != NULL; aux = aux->izq);
-
-  return aux;
-}
-
-void ctree_recorrer_dfs(CTree nodo, FuncionV func) {    // In-Order
-  if (nodo != NULL) {
-    ctree_recorrer_dfs(nodo->izq, func);
-    func(nodo->dato);
-    ctree_recorrer_dfs(nodo->der, func);
-  }
 }
 
 

@@ -18,7 +18,80 @@ El elemento del final de la lista es el mas antiguo y menos accedido, por lo q e
 
 Usar una estructura de epoll para recuperar los msjes de tcp
 
+Para el LRU:
+Cuando vayamos a liberar memoria, usar trylocks cuando intentemos eliminar un nodo, y en caso de no poder, probar con el siguiente
+Para evitar deadlocks.
 
 En cuanto a los archivos:
 hash_table.c y hash_table.h estan temporales para testear el server,
 despues vamos a hash.c y hash.h que estan en la carpeta structures.
+
+Dentro de los nodos de los arboles de la tabla hash, guardamos:
+
+
+#define SIZE
+tablaHash (Arboles){
+    lock[SIZE];
+    ARBOL[SIZE];
+}
+
+
+Arbol(nodo) ->
+Nodo{
+    char* clave, valor;
+    int largoclave, largovalor;
+    bool imprimibile;
+}
+
+----
+
+
+
+
+int val = 0;
+
+for(int i = 0; i < largo, i++){
+    if(PRENDIDO[i]){
+        val += 1;
+    }
+    val = val<<1;
+
+    if(i%8 == 0 || i == largo-1){
+        /// terminamos de llenar el char.
+        char c = val;
+        val = 0;
+    }
+}
+
+
+for(int i = 0; i < largo; i++){
+    char c;
+    c & 1<<4
+}
+
+
+
+typedef struct {
+    char* key, value;
+    int lenvalue , lenkey;
+	bool printable;
+} Node;
+
+
+typedef struct {
+	pthread_mutex_t lock;
+	unsigned long long puts, gets, takes, dels, keys;
+}STATS;
+
+#define SIZE 50000
+
+typedef struct {
+    CTree entry [SIZE];
+	pthread_mutex_t lock[SIZE];
+	STATS stats;
+
+	pthread_mutex_t lockLRU;
+	dlist<*Node> D;   0(tree1) -> 1(tree4) -> 2 (tree2) -> 3(tree2) -> 4 (tree1) 
+
+} HashTable;
+
