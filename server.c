@@ -49,7 +49,7 @@ El delete deberia devolver true o false si borro o no la clave
  */
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
+//echo -n "\n" | echo -n "a" | echo -n " " | echo -n "T" | echo -n "U" | echo -n "P" | nc localhost 888
 HashTable hTable;
 
 int fd_readline(int fd, char *buf)
@@ -58,96 +58,182 @@ int fd_readline(int fd, char *buf)
 	int i = 0;
 	while ((rc = read(fd, buf + i, 1)) > 0)
 	{
-		//fflush( stdin );
-		if (buf[i] == '\n')
+		if (i > 2048){
+			printf("EINVAL");//IMPLEMENTAR
+			//einvalFlag = 1;
+			// hay que seguir leyendo hasta encontrar el /n 
+		}
+
+		//if (buf[i] ) no imprimible -> einval?
+
+		// //fflush( stdin );
+		if (buf[i] == '\n'){
 			break;
+		}
 		i++;
 	}
 	if (rc < 0)
-		return rc;
+		return -1;
 
-	buf[i] = 0;
 	return i;
 }
 
-int handle_conn(int csock)
-{
-	HashTable *table = &hTable;
-	char buf[READ_SIZE], *token, **args, clave[100];
-	int rc, size;
+/*
+Casos a considerar:
+Se recibe una string sin \n: ("PUT ke")
+	- Se guarda en la estructura de eloop_data 
+Mientras estamos leyendo:
+	Llega un "\n":
+		- 
+	i > 2048:
+		-Se guarda una bandera de einval=true
+		-Se sigue leyendo hasta llegar al /n
+Cuando terminamos de leer:
+	Cuando unimos las strings que nos llegaron al eloop_data:
+	Si resulta mas larga que 2048:
+		-Respondemos con einval y desechamos la request
+
+*/
+
+int processReq(eloop_data* data, char** req){
+		HashTable *table = &hTable; //Temporal hasta q resolvamos la hashtable con colisiones
+		int size;
+		char clave[2048]; //Esto no va a hacer falta, pq en la version nueva la clave y el valor son strings
+
+		if (!strcmp(req[0], "PUT"))
+		{ // PUT test 123
+			pthread_mutex_lock(&mutex);
+			printf("llamamos a put, con argumentos %s y %d\n",req[1],atoi(req[2]) );
+			insert(table, req[1], atoi(req[2]));
+			pthread_mutex_unlock(&mutex);
+			write(data->fd, "OK\n", 4);
+			/*
+			Node* node;
+			node = create_node(req[1], req[2], strlen(), )
+			
+			*/
+		}
+		else if (!strcmp(req[0], "DEL") && req[2] == NULL)
+		{
+			pthread_mutex_lock(&mutex);
+			printf("llamamos a del, con argumentos %s\n",req[1] );
+			delete (table, req[1]);
+			pthread_mutex_unlock(&mutex);
+			write(data->fd, "Clave-valor eliminado exitosamente\n", 35);
+		}
+		else if (!strcmp(req[0], "GET") && req[2] == NULL)
+		{
+			pthread_mutex_lock(&mutex);
+			int resGet = get(table, req[1]);
+			pthread_mutex_unlock(&mutex);
+			if (resGet == -1)
+			{
+				write(data->fd, "No existe clave para el valor ingresado\n", 40);
+			}
+			else
+			{
+				sprintf(clave, "%d", resGet);
+				size = strlen(clave);
+				write(data->fd, clave, size);
+				write(data->fd, "\n", 1);
+			}
+		} else if (!strcmp(req[0], "STAT") && req[1] == NULL){
+			printf("Stat\n");
+			//do stuff
+		} else {
+			return -1;
+		}
+	return 0;
+}
+
+int validateReq(char *req[3], int words){
+	if (((strcmp("PUT", req[0]) == 0) && words == 3) ||
+		((strcmp("GET", req[0]) == 0) && words == 2) ||
+		((strcmp("DEL", req[0]) == 0) && words == 2) ||
+		((strcmp("STAT", req[0]) == 0) && words == 1)) {
+			return 1;
+	} else {
+		return 0;
+	}
+}
+
+int parseLine(eloop_data* data, char* buff, char* req[3]){
+	int words = 0;
+	char* token = strtok(buff, " \n");
+
+	for (int i = 0; token != NULL && words <= 3; i++)
+	{
+		words++;
+		req[i] = malloc(strlen(token) + 1);
+		if (req[i] == NULL)
+			quit("Fallo malloc");
+		
+		strcpy(req[i], token);
+		req[i + 1] = NULL;
+
+		token = strtok(NULL, " \n");
+	}
+	
+	if (words > 0 && words <= 3 && validateReq(req, words))
+		return 0;
+	return -1;
+}
+
+
+/*
+firstLine: si es la primera linea que se lee
+*/
+void handleConnText(eloop_data* data, int firstLine)
+{	
+	char buf[READ_SIZE];
+	int rc, csock = data->fd;
 
 	/* Atendemos pedidos, uno por linea */
 	rc = fd_readline(csock, buf);
 	printf("leimos %d caracteres\n",rc);
-	if (rc < 0)
+
+	if ( rc == -1)
 		quit("Fallo al leer");
 
-	// Parseo del input
-	args = malloc(sizeof(char *) * 3);
-	if (args == NULL)
-		quit("Fallo malloc");
-	token = strtok(buf, " \n"); /// separa segun espacio y \n
-	int palabras = 0;
-	for (int i = 0; token != NULL; i++)
-	{
-		args[i] = malloc(strlen(token) + 1);
-		if (args[i] == NULL)
-			quit("Fallo malloc");
-		strcpy(args[i], token);
-
-		token = strtok(NULL, " \n");
-		args[i + 1] = NULL;
-		palabras++;
-	}
+	if ( rc == 0 ){
 		/* Linea vacia, se cerró la conexión */
-	if (rc == 0)
-	{
 		write(csock, "Cliente desconectado\n", 21);
-		return -1;
+		if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, csock, NULL) == -1)
+		{
+			close(data->epfd);
+			quit("Fallo al quitar fd de epoll\n");
+		}
+		close(csock);
+	} else {
+		if ( buf[rc] == '\n' ){ //Se recibio una linea completa
+			char *req[3];
+			if ( parseLine(data, buf, req) == -1 ){
+				write(csock, "Comando invalido\n", 17);
+			} else {
+				if ( processReq(data, req) == -1 ){
+					write(csock, "Comando invalido\n", 17);
+				}
+			}
+			data->buffSize = 0;
+			handleConnText(data, 0);
+		} else {
+			// FALTA TESTEAR BIEN
+			strcpy(data->buff + data->buffSize, buf );
+			data->buffSize += rc;
+			//for(int i=0; i<data->buffSize;i++){printf("%c", data->buff[i]);}
+			agregarClienteEpoll(csock, data->epfd, 0, (void*)data);
+		}
 	}
+}
 
-	if (!strcmp(args[0], "PUT") && palabras == 3)
-	{ // PUT test 123
-		pthread_mutex_lock(&mutex);
-		printf("llamamos a put, con argumentos %s y %d\n",args[1],atoi(args[2]) );
-		insert(table, args[1], atoi(args[2]));
-		pthread_mutex_unlock(&mutex);
-		write(csock, "OK\n", 4);
-	}
-	else if (!strcmp(args[0], "DEL") && palabras == 2)
-	{
-		pthread_mutex_lock(&mutex);
-		printf("llamamos a del, con argumentos %s\n",args[1] );
-		delete (table, args[1]);
-		pthread_mutex_unlock(&mutex);
-		write(csock, "Clave-valor eliminado exitosamente\n", 35);
-	}
-	else if (!strcmp(args[0], "GET") && palabras == 2)
-	{
-		pthread_mutex_lock(&mutex);
-		int resGet = get(table, args[1]);
-		pthread_mutex_unlock(&mutex);
-		if (resGet == -1)
-		printf("llamamos a get, con argumentos %s\n",args[1] );
-		if (get(table, args[1]) == -1)
-		{
-			write(csock, "No existe clave para el valor ingresado\n", 40);
-		}
-		else
-		{
-			sprintf(clave, "%d", resGet);
-			size = strlen(clave);
-			write(csock, clave, size);
-			write(csock, "\n", 1);
-		}
-	}
-	return 0;
+void handleConnBin(eloop_data* data){
+	printf("Bin 10101010\n");
 }
 
 void *wait_for_clients(void *threadParam)
 {
-	int events_count, epoll_fd, csock, textSock, binSock, clientReqFd, event_fd;
-
+	int events_count, epoll_fd, csock, textSock, binSock, event_fd;
+	eloop_data* data;
 	epoll_fd = ((int*)threadParam)[0];
 	textSock = ((int*)threadParam)[1];
 	binSock = ((int*)threadParam)[2];
@@ -157,7 +243,8 @@ void *wait_for_clients(void *threadParam)
 	{
 		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, TIMEOUT);
 		for (int i = 0; i < events_count; i++){
-			event_fd = ((eloop_data*)events[i].data.ptr)->fd;
+			data = ((eloop_data*)events[i].data.ptr);
+			event_fd = data->fd;
 			if ( (event_fd == textSock) || (event_fd == binSock) ){
 				csock = accept(event_fd, NULL, NULL);
 				if (csock == -1){
@@ -167,26 +254,13 @@ void *wait_for_clients(void *threadParam)
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL);
 				}
 			} else {
-				clientReqFd = event_fd;
-				if (handle_conn(clientReqFd) == -1)
-				{
-					if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, clientReqFd, NULL) == -1)
-					{
-						close(epoll_fd);
-						quit("Fallo al quitar fd de epoll\n");
-					}
-					close(clientReqFd);
-				}else{
-					printf("Agregamos cliente por primera vez\n");
-					agregarClienteEpoll(clientReqFd,epoll_fd, 0, events[i].data.ptr);
+				data->isText ? handleConnText(data, 1) : handleConnBin(data);
 				}
-			}
-
-
 		}
 	}
 }
 
+//make clean && sudo make run
 int main(int argc, char **argv){
 
 	pthread_t t[MAX_THREADS];

@@ -49,12 +49,16 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr){
 	int op = init ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
 	ev.events = EPOLLIN | EPOLLONESHOT;
 
-	if(init){ //Si es el primer registro, le cargamos la estructura
-		printf("firstimer\n");
+	if(init){ //Si es el primer registro, cargamos la estructura
 		eloop_data *eloop = malloc(sizeof(eloop_data));
+		eloop->fd = cliente;
+		eloop->epfd = epoll_fd;
+		eloop->isText = (init==1);
+		if ( eloop->isText ) {
+			char* buffer = malloc(sizeof(char)*READ_SIZE);
+			eloop->buff = buffer;
+		}
 		ev.data.ptr = eloop;
-		((eloop_data*)ev.data.ptr)->fd = cliente;
-		((eloop_data*)ev.data.ptr)->epfd = epoll_fd;
 	} else{ //Caso contrario, recuperamos los datos
 		ev.data.ptr = dataPtr;
 	}

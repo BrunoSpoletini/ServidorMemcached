@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #define MAX_EVENTS 256
-#define READ_SIZE 256
+#define READ_SIZE 2048
 #define MAX_CLIENTS 256
 #define TIMEOUT 100
 #define MAX_THREADS 4
@@ -15,8 +15,6 @@
 #define DEFAULT_TEXT_SOCKET 888
 #define DEFAULT_BIN_SOCKET 889
 #define DEFAULT_MEM_LIMIT 1000000000  ///  1GB
-
-
 
 enum code {
 	PUT = 11,
@@ -34,9 +32,6 @@ enum code {
 	EOOM = 116,
 };
 
-static const int text_port = 8888;
-static const int bin_port = 8889;
-
 // Cierra el programa e imprime un mensaje de error
 void quit(char *s);
 
@@ -45,7 +40,8 @@ typedef struct _eloop_data {
 	int fd;
 	int epfd; // file descriptor de epoll
 	int isText;
-	char buffer[MSG_SIZE];
+	char *buff;
+	int buffSize;
 } eloop_data;
 
 /*

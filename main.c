@@ -15,7 +15,6 @@ unsigned long mlimit = DEFAULT_MEM_LIMIT;
 Este archivo main deberia ser el primero en llamar, con permisos de sudo.
 Seteamos el limite de memoria, 
 Luego, levantamos los sockets, bajamos privilegios, y pasamos al server los sockets.
-
 */
 
 int mk_lsock(int port){
@@ -66,22 +65,17 @@ bool std_down_privileges(){
 }
 
 void parseargs(int argc, char **argv){
-
-	/// argv[0] = nombre del programa.
 	for (int i = 1; i < argc - 1; i++){
-
 		if (strcmp(argv[i], "-t") == 0){
             tsocket = atoi(argv[i + 1]);
             if(tsocket < 0 || tsocket > 65535)
                 quit("Puerto de socket de texto no valido\n");
         }
-
 		if (strcmp(argv[i], "-b") == 0){
 			bsocket = atoi(argv[i + 1]);
             if(bsocket < 0 || bsocket > 65535)
                 quit("Puerto de socket binario no valido\n");
         }
-
 		if (strcmp(argv[i], "-m") == 0){
 			mlimit = atoi(argv[i + 1]);
             if(mlimit < 0)
@@ -90,14 +84,11 @@ void parseargs(int argc, char **argv){
 	}
 }
 
-
-
 int main(int argc, char **argv){
 
 	parseargs(argc, argv);
 
 	uid_t uid = getuid(); /// les pasamos user y grupo de usuario no root.
-
 	if (uid != 0)
 		quit("Se necesitan permisos de root.");
 
@@ -113,26 +104,14 @@ int main(int argc, char **argv){
 
 	free(rlimits);
 
-
-
 	if (!std_down_privileges())
-        quit("No se pueden bajar los privilegios.\n");
-
-
-    printf("voy al server\n");    
-
-
+        quit("No se pueden bajar los privilegios.\n");  
 	
     if (access("./server", F_OK) == 0){
 		// execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
-        printf("Exec prev\n");
         execl("./server" , "./server" , itos(text_socket) , itos(bin_socket), NULL); 
-        printf("Exec post\n");
 	}else{
 		quit("El server no fue buildeado");
 	}
-
-
-
 	return 0;
 }

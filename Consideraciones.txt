@@ -17,6 +17,7 @@ Cada vez que se accede a memoria, se mueve el puntero al principio de la lista (
 El elemento del final de la lista es el mas antiguo y menos accedido, por lo q es el cual eliminamos.
 
 Usar una estructura de epoll para recuperar los msjes de tcp
+--Borrar la memoria alocada a la estructura cuando un cliente se desconecte
 
 Para el LRU:
 Cuando vayamos a liberar memoria, usar trylocks cuando intentemos eliminar un nodo, y en caso de no poder, probar con el siguiente
