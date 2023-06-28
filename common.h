@@ -43,6 +43,8 @@ typedef struct _eloop_data {
 	int isText;
 	char *buff;
 	int buffSize;
+	int einval;
+	int notPrintable;
 } eloop_data;
 
 /*

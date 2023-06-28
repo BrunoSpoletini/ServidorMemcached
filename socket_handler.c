@@ -58,6 +58,8 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr){
 			char* buffer = malloc(sizeof(char)*READ_SIZE);
 			eloop->buff = buffer;
 		}
+		eloop->einval = 0;
+	    eloop->notPrintable = 0;
 		ev.data.ptr = eloop;
 	} else{ //Caso contrario, recuperamos los datos
 		ev.data.ptr = dataPtr;

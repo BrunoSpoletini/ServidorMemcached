@@ -52,25 +52,38 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 //echo -n "\n" | echo -n "a" | echo -n " " | echo -n "T" | echo -n "U" | echo -n "P" | nc localhost 888
 HashTable hTable;
 
-int fd_readline(int fd, char *buf)
+
+/*
+errP = 1 -> EINVAL
+errP = 2 -> linea con caracter no imprimible
+Leeemos hasta llegar a un /n, si superamos los 2048 caracteres leyendo el /n seteamos la flag de error EINVAL
+En caso de no llegar al /n, si superamos 2048 seteamos flag EINVAL, y si no los superamos, 
+revisamos que el caracter que estamos leyendo sea imprimible.
+*/
+int fd_readline(int fd, char *buf, int* errP)
 {
 	int rc;
 	int i = 0;
 	while ((rc = read(fd, buf + i, 1)) > 0)
 	{
-		if (i > 2048){
-			printf("EINVAL");//IMPLEMENTAR
-			//einvalFlag = 1;
-			// hay que seguir leyendo hasta encontrar el /n 
-		}
 
-		//if (buf[i] ) no imprimible -> einval?
-
-		// //fflush( stdin );
 		if (buf[i] == '\n'){
+			if (i > 2048)
+				*errP = 1;
 			break;
+		} else {
+			if (i > 2048){
+				*errP = 1;
+				i = 1;
+				printf("EINVAL");
+			} else if ( buf[i] < 32 || 126 < buf[i]){
+				printf("%d\n", buf[i]);
+				*errP = 2;
+			}
 		}
 		i++;
+		// //fflush( stdin );
+	printf("%d - ", *errP);
 	}
 	if (rc < 0)
 		return -1;
@@ -78,24 +91,7 @@ int fd_readline(int fd, char *buf)
 	return i;
 }
 
-/*
-Casos a considerar:
-Se recibe una string sin \n: ("PUT ke")
-	- Se guarda en la estructura de eloop_data 
-Mientras estamos leyendo:
-	Llega un "\n":
-		- 
-	i > 2048:
-		-Se guarda una bandera de einval=true
-		-Se sigue leyendo hasta llegar al /n
-Cuando terminamos de leer:
-	Cuando unimos las strings que nos llegaron al eloop_data:
-	Si resulta mas larga que 2048:
-		-Respondemos con einval y desechamos la request
-
-*/
-
-int processReq(eloop_data* data, char** req){
+void processReq(eloop_data* data, char** req){
 		HashTable *table = &hTable; //Temporal hasta q resolvamos la hashtable con colisiones
 		int size;
 		char clave[2048]; //Esto no va a hacer falta, pq en la version nueva la clave y el valor son strings
@@ -140,10 +136,7 @@ int processReq(eloop_data* data, char** req){
 		} else if (!strcmp(req[0], "STAT") && req[1] == NULL){
 			printf("Stat\n");
 			//do stuff
-		} else {
-			return -1;
-		}
-	return 0;
+		} 
 }
 
 int validateReq(char *req[3], int words){
@@ -180,16 +173,15 @@ int parseLine(eloop_data* data, char* buff, char* req[3]){
 }
 
 
-/*
-firstLine: si es la primera linea que se lee
-*/
-void handleConnText(eloop_data* data, int firstLine)
+
+void handleConnText(eloop_data* data)
 {	
 	char buf[READ_SIZE];
 	int rc, csock = data->fd;
-
+	int err=0;
+	int* errP = &err;
 	/* Atendemos pedidos, uno por linea */
-	rc = fd_readline(csock, buf);
+	rc = fd_readline(csock, buf, errP);
 	printf("leimos %d caracteres\n",rc);
 
 	if ( rc == -1)
@@ -206,21 +198,32 @@ void handleConnText(eloop_data* data, int firstLine)
 		close(csock);
 	} else {
 		if ( buf[rc] == '\n' ){ //Se recibio una linea completa
-			char *req[3];
-			if ( parseLine(data, buf, req) == -1 ){
-				write(csock, "Comando invalido\n", 17);
-			} else {
-				if ( processReq(data, req) == -1 ){
+
+			if (*errP == 1 || data->einval || (rc + data->buffSize) > 2048){ // EINVAL
+				write ( csock, "EINVAL\n",7);	
+			} else if (*errP == 2 || data->notPrintable){ // Caracter no imprimible
+				write(csock, "Comando invalido - Caracteres no imprimible\n", 44);
+			} else { // No hay error
+				char *req[3];
+				if ( parseLine(data, buf, req) == -1 ){
 					write(csock, "Comando invalido\n", 17);
+				} else {
+					processReq(data, req);
 				}
 			}
+			*errP = 0;
+			data->einval = 0;
+			data->notPrintable = 0;
 			data->buffSize = 0;
-			handleConnText(data, 0);
+			handleConnText(data);
 		} else {
-			// FALTA TESTEAR BIEN
+			// FALTA TESTEAR BIEN - DEBUG
+			data->einval = (*errP == 1);
+			data->notPrintable = (*errP == 2);
 			strcpy(data->buff + data->buffSize, buf );
 			data->buffSize += rc;
-			//for(int i=0; i<data->buffSize;i++){printf("%c", data->buff[i]);}
+			//for(int i=0; i<data->buffSize;i++){printf("%c-", data->buff[i]);} // DEBUG
+			//printf("\n");// DEBUG
 			agregarClienteEpoll(csock, data->epfd, 0, (void*)data);
 		}
 	}
@@ -254,7 +257,8 @@ void *wait_for_clients(void *threadParam)
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL);
 				}
 			} else {
-				data->isText ? handleConnText(data, 1) : handleConnBin(data);
+				printf("Pasa por epoll\n");
+				data->isText ? handleConnText(data) : handleConnBin(data);
 				}
 		}
 	}

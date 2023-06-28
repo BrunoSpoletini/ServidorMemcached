@@ -16,11 +16,11 @@ bool printable(char *s, int len){
     return rta;
 }
 
-unsigned long hash(const char* key, int len) { /// esta aca de momento esta funcion.
-    unsigned long hashValue = 0;
-    int i = 0;
-    for(int i = 0;i < len; i++){
-        hashValue = key[i] + (hashValue << 5) - hashValue; /// estaria bueno saber si con esto nos evitamos los overflows.
-    }
-    return hashValue;
-}
+// unsigned long hash(const char* key, int len) { /// esta aca de momento esta funcion.
+//     unsigned long hashValue = 0;
+//     int i = 0;
+//     for(int i = 0;i < len; i++){
+//         hashValue = key[i] + (hashValue << 5) - hashValue; /// estaria bueno saber si con esto nos evitamos los overflows.
+//     }
+//     return hashValue;
+// }

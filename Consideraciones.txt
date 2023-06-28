@@ -1,3 +1,6 @@
+git grep "DEBUG"
+en el dir principal para ver lo que queda por limpiar en el proyecto
+
 politica de desalojo:
 desalojar la clave valor menos usada, con la stat mas baja?
 Prob sea la mas reciente, pero es cierto que llevar una cola para desalojar la primera
@@ -27,6 +30,22 @@ En cuanto a los archivos:
 hash_table.c y hash_table.h estan temporales para testear el server,
 despues vamos a hash.c y hash.h que estan en la carpeta structures.
 
+Parseo de text:
+Casos a considerar:
+Se recibe una string sin \n: ("PUT clav")
+    - Se checkea que no contenga caracteres no imprimibles
+    - Se checkea que no supere los 2048 caracteres
+	- Se guarda en la estructura de eloop_data 
+Mientras estamos leyendo:
+	Llega un "\n":
+		- 
+	i > 2048:
+		-Se guarda una bandera de einval=true
+		-Se sigue leyendo hasta llegar al /n
+Cuando terminamos de leer:
+	Cuando unimos las strings que nos llegaron al eloop_data:
+	Si resulta mas larga que 2048:
+		-Respondemos con einval y desechamos la request
 
 
 parametros:

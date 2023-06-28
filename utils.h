@@ -6,6 +6,6 @@
 
 bool printable(char *s, int len);
 char *itos(int i);
-unsigned long hash(const char* key, int len);
+//unsigned long hash(const char* key, int len);
 
 #endif
