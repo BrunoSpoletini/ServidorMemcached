@@ -27,6 +27,16 @@ En cuanto a los archivos:
 hash_table.c y hash_table.h estan temporales para testear el server,
 despues vamos a hash.c y hash.h que estan en la carpeta structures.
 
+
+
+parametros:
+-t text_socket
+-b bin_socket
+-m mem_limit
+-np NumeroProcesadores ? o tomar el maximo de procesadores que hay disponibles. Si hay que tener buena performance capaz conviene tomar todos.
+
+
+
 Dentro de los nodos de los arboles de la tabla hash, guardamos:
 
 
