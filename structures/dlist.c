@@ -1,12 +1,10 @@
 #include "dlist.h"
 #include <stdlib.h>
 
-DList *dlist_crear(char *alias) {
+DList *dlist_crear() {
   DList *lista = malloc(sizeof(DList));
   lista->primero = NULL;
   lista->ultimo = NULL;
-  lista->alias = malloc(sizeof(char) * (strlen(alias)));
-  strcpy(lista->alias, alias);
   return lista;
 }
 
@@ -18,7 +16,6 @@ void dlist_destruir(void *lista) {
     free(nodoAEliminar->dato);
     free(nodoAEliminar);
   }
-  free(((DList *) lista)->alias);
   free(lista);
 }
 
@@ -35,6 +32,17 @@ void dlist_agregar_final(DList * lista, void *dato) {
     lista->primero = nuevoNodo;
   }
   lista->ultimo = nuevoNodo;
+}
+
+
+DNodo *buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
+
+  DNodo *aux = lista->primero;
+  while(aux != NULL){
+    if( compare(aux->dato, nodo) )
+        return aux->dato;
+  }
+  return NULL;
 }
 
 void eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {

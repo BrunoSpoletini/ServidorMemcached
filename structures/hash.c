@@ -1,11 +1,5 @@
 #include "hash.h"
-#include "dlist.h"
-#include "ctree.h"
-#include "conjunto.h"
 
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
 
 int hash_string(char *value) {
   unsigned long long int key = 0;
@@ -16,57 +10,37 @@ int hash_string(char *value) {
   return (int) key;
 }
 
-CTree *crear_tabla() {
-  CTree *tabla = malloc(sizeof(CTree) * TABLESIZE);
+void inicializar_tabla(Hashtable *ht) {
+  
   for (int i = 0; i < TABLESIZE; i++) {
-    tabla[i] = NULL;
+    ht->row[i] = dlist_crear();
+    pthread_mutex_init(&ht->rlock[i], NULL); 
   }
-  return tabla;
+  ht->stats = create_stats();
+
 }
 
 
-void insertar_elem_tabla(void *dato, CTree * tabla,
-                         FuncionObtencion obtenerCadena,
-                         FuncionComparacion dlistComparar, int codigoError) {
-  int hash = hash_string(obtenerCadena(dato));
-  if (dato != NULL)
-    tabla[hash] =
-        ctree_insertar(tabla[hash], dato, dlistComparar, dlist_destruir);
-  else
-    mensaje_error(codigoError);
+void *evict(Hashtable *ht, unsigned bytes){
+  /// tenemos que liberar bytes de la ht, soltando por la politica de desalojo.
+  return NULL;
 }
 
-void *buscar_elem_tabla(char *string, CTree * tabla) {
-  int hash = hash_string(string);
-  return ctree_buscar(string, tabla[hash], comparar_alias, dlist_alias);
+void *tryalloc(Hashtable *ht, unsigned bytes){
+
+    void* space = malloc(bytes);
+    if(space == NULL){
+         return evict(ht,bytes);
+    }
+
+    return space;
 }
 
-void liberar_tabla(CTree * tabla) {
-  for (int i = 0; i < TABLESIZE; i++) {
-    ctree_destruir(tabla[i], dlist_destruir);
-  }
-  free(tabla);
-}
+char *copycat(Hashtable *ht,char *s, int len){
 
-
-int PUT(Hashtable *ht, Node *node){
-
-    int index = node->hash;
-    lock( &ht->Tlock[index] );
-
-    insertar_elem_tabla( node, ht->tree[index], equal_keys);
-
-    unlock(&ht->Tlock[Node->hash]);
-
-    return OK;
-}
-
-
-char *copy(char *s, int len){
-
-  char *c = tryalloc(len);
-  if(c == EOOM){
-    return EOOM;
+  char *c = tryalloc(ht , len);
+  if(c == NULL){
+    return NULL;
   }
 
   strcpy(c,s);
@@ -75,50 +49,78 @@ char *copy(char *s, int len){
 }
 
 
-void* GET(Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+
+int _PUT(Hashtable *ht, Node *node){
+
+    int index = node->hash;
+    pthread_mutex_lock( &ht->rlock[index] );
+
+    dlist_agregar_final( ht->row[index], node);
+
+    /// y agregar al lru.
+
+    pthread_mutex_unlock(&ht->rlock[index]);
+
+    return OK;
+}
+
+
+
+
+void* _GET(Hashtable *ht, Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
 
   int index = node->hash;
 
-  lock( &ht->Tlock[index] );
+  pthread_mutex_lock( &ht->rlock[index] );
 
-  Node *elem = buscar_elem_tabla(node,ht->tree[index]);
-  if(elem == NULL){
-    destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
-    return ENOTFOUND;
-  }
 
-  char* retval = copy(elem->value, elem->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
+  DNodo *elem = buscar_nodo(ht->row[index], node, equal_keys);
+  
+  destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
 
-  unlock(&ht->Tlock[Node->hash]);
+  if(elem == NULL)
+    return (void*)ENOTFOUND;
+
+  /// y agregar al lru.
+
+  char* retval = copycat(ht, ((Node*)elem->dato)->value , ((Node*)elem->dato)->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
+
+  if(retval == NULL)
+    return (void*)EOOM;
+
+  pthread_mutex_unlock(&ht->rlock[index]);
 
   return retval;
 }
 
 
-void *evict(Hashtable *ht, unsigned bytes){
-  /// tenemos que liberar bytes de la ht, soltando por la politica de desalojo.
 
-}
-
-
-int DEL(Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+int _DEL(Hashtable *ht,Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
 
   int index = node->hash;
 
-  lock( &ht->Tlock[index] );
+  pthread_mutex_lock( &ht->rlock[index] );
 
-  Node *elem = buscar_elem_tabla(node,ht->tree[index]);
-  if(elem == NULL){
-    destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
+  DNodo *elem = buscar_nodo(ht->row[index], node, equal_keys);
+  
+  destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
+  
+  if(elem == NULL)
     return ENOTFOUND;
-  }
 
-  ctree_eliminar(node,ht->tree[index]);
+  eliminar_nodo(ht->row[index], elem, destroy_node);
 
-  unlock(&ht->Tlock[Node->hash]);
+  pthread_mutex_unlock(&ht->rlock[index]);
 
   return OK;
 }
+
+
+
+
+
+
+
 
 
 

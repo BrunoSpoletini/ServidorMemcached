@@ -1,10 +1,13 @@
 #ifndef __HASH_H__
 #define __HASH_H__
 
+#include "dlist.h"
+
+#include <math.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-#include "ctree.h"
 #include "dlist.h"
 #include "stats.h"
 #include "Node.h"
@@ -13,18 +16,13 @@
 
 
 typedef struct {
-    CTree tree[TABLESIZE];
-    pthread_mutex_t Tlock[TABLESIZE];
-    dlist LRU;
+    DList *row[TABLESIZE];
+    pthread_mutex_t rlock[TABLESIZE];
+    DList *LRU;
     pthread_mutex_t locklru;
-    Stats stats;
+    Stats *stats;
 }Hashtable;
 
-
-/*
-
-
-*/
 
 
 typedef char *(*FuncionObtencion) (void *dato);
@@ -33,20 +31,8 @@ typedef char *(*FuncionObtencion) (void *dato);
 int hash_string(char *value);
 
 // Crea una tabla hash vacia de tamaño TABLESIZE
-CTree *crear_tabla();
+void inicializar_tabla(Hashtable *ht);
 
-// Imprime un mensaje de error
-void mensaje_error(int num);
 
-// Agrega un elemento recibido en una tabla hash, o imprime un mensaje de error en caso de no ser posible insertarlo
-void insertar_elem_tabla(void *dato, CTree * tabla,
-                         FuncionObtencion obtenerCadena,
-                         FuncionComparacion dlistComparar, int codigoError);
-
-// Busca un elemento en una tabla hash y retorna un puntero al mismo
-void *buscar_elem_tabla(char *string, CTree * tabla);
-
-// Libera la memoria reservada para la tabla hash
-void liberar_tabla(CTree * tabla);
 
 #endif                          /* __HASH_H__ */

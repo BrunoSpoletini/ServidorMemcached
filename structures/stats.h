@@ -6,12 +6,11 @@ typedef struct {
 
     unsigned long long puts, dels, gets,keys;
 
-    /// aca se podria agregar un lock, para que al momento de imprimir las stats,
-    /// no se permita que otro las edite, y asi evitar tener unas estadisticas "invalidas".
-
+    pthread_mutex_t lock; /// no solo para sumar, sino que al momento de imprimir, tambien hay que usarlo.
 }Stats;
 
 
+Stats *create_stats();
 void add_put(Stats *s);
 void add_del(Stats *s);
 void add_get(Stats *s);

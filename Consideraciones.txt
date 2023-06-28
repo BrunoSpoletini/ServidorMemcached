@@ -36,6 +36,11 @@ parametros:
 -np NumeroProcesadores ? o tomar el maximo de procesadores que hay disponibles. Si hay que tener buena performance capaz conviene tomar todos.
 
 
+Para poder usar el ctree, tendriamos que poder definir una funcion que nos diga que un nodo es menor que otro.
+Dentro de los criterios que existen esta comparar la clave o el valor, lo cual puede ser muy costoso.
+Se decidio utilizar la lista enlazada como estructura que almacena los nodos, por este motivo.
+
+
 
 Dentro de los nodos de los arboles de la tabla hash, guardamos:
 
