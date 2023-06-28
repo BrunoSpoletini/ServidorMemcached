@@ -60,7 +60,6 @@ Dentro de los criterios que existen esta comparar la clave o el valor, lo cual p
 Se decidio utilizar la lista enlazada como estructura que almacena los nodos, por este motivo.
 
 
-
 Al momento de realizar un PUT, se puede crear un nodo con create_node_from_KV(char* key, int lenkey, char *value, int lenvalue),
 y despues llamar a _PUT(Hashtable *ht, Node *node)
 

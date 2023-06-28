@@ -45,6 +45,10 @@ typedef struct _eloop_data {
 	int buffSize;
 	int einval;
 	int notPrintable;
+	int keySize;
+	char* key;
+	int valueSize;
+	char* key;
 } eloop_data;
 
 /*

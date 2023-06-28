@@ -66,7 +66,6 @@ int fd_readline(int fd, char *buf, int* errP)
 	int i = 0;
 	while ((rc = read(fd, buf + i, 1)) > 0)
 	{
-
 		if (buf[i] == '\n'){
 			if (i > 2048)
 				*errP = 1;
