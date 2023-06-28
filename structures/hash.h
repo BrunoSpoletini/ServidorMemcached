@@ -11,8 +11,8 @@
 #include "dlist.h"
 #include "stats.h"
 #include "Node.h"
+#include "../common.h"
 
-#define TABLESIZE  50000
 
 
 typedef struct {

@@ -17,7 +17,6 @@ Stats *create_stats(){
     newstats->dels = 0;
     newstats->gets = 0;
     newstats->keys = 0;
-
     return newstats;
 }
 

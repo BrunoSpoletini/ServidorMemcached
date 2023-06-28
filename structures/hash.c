@@ -1,15 +1,5 @@
 #include "hash.h"
 
-
-int hash_string(char *value) {
-  unsigned long long int key = 0;
-  for (int i = 0; value[i] != '\0'; i++) {
-    key += value[i] * pow(2, (i % 10));
-  }
-  key = key % TABLESIZE;
-  return (int) key;
-}
-
 void inicializar_tabla(Hashtable *ht) {
   
   for (int i = 0; i < TABLESIZE; i++) {
