@@ -142,29 +142,22 @@ int parseLine(eloop_data* data, char* buff, char* req[3]){
 	return -1;
 }
 
-
-/*
-Leeemos hasta llegar a un /n, si superamos los READ_SIZE caracteres leyendo el /n seteamos la flag de error EINVAL
-En caso de no llegar al /n, si superamos READ_SIZE seteamos flag EINVAL, y si no los superamos, 
-revisamos que el caracter que estamos leyendo sea imprimible.
-*/
-int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
+int fd_readline(eloop_data* data)
 {
-	int ret, conectado=1;
-	int i=0, linea = 0;
+	int ret, conectado=1, i=0, linea = 0;
 	char buffer[READ_SIZE+2];
 	strcpy(buffer, data->buff);
-	int rc = read(fd, buffer + data->buffSize, READ_SIZE - (data->buffSize)  );
-	printf("Se llama a readline\n");
+	int rc = read(data->fd, buffer + data->buffSize, READ_SIZE - (data->buffSize)  );
+	//printf("Se llama a readline\n");
 	if (rc > 0){
-		printf("Se lee: [");
-		for(int k=0; k<(rc+data->buffSize); k++){printf("%c", buffer[k]);}
-		printf("]\n");
+		//printf("Se lee: [");
+		//for(int k=0; k<(rc+data->buffSize); k++){printf("%c", buffer[k]);}
+		//printf("]\n");
 		buffer[data->buffSize + rc] = '\0';
 		while ( conectado && (i <= rc) ){ // Recorremos la cadena recibida
 
 			if ( (buffer[data->buffSize+i] < 32 && buffer[data->buffSize+i] != 10 && buffer[data->buffSize+i] != 13 && buffer[data->buffSize+i] != 0) || 126 < buffer[data->buffSize+i]){
-				printf("Caracter no imprimible: %d, en el i; %d\n", buffer[data->buffSize+i], i);
+				//printf("Caracter no imprimible: %d, en el i; %d\n", buffer[data->buffSize+i], i);
 				data->notPrintable = 1;
 			}
 			if ( buffer[data->buffSize+i] == '\n' ){
@@ -175,12 +168,12 @@ int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 					write(data->fd, "Comando invalido - Caracteres no imprimible\n", 44);
 				} else {
 					char *req[3];
-					printf("Lo que se le pasa al parser: -%s-\n", buffer+linea);
+					//printf("Lo que se le pasa al parser: -%s-\n", buffer+linea);
 					ret =  conectado ? parseLine(data, buffer + linea, req) : -2;
 					if ( ret == -1 ){
 						write(data->fd, "Comando invalido\n", 17);
 					} else if ( ret == -2){ //Se desconecta el cliente
-						printf("DESCONECTADO\n");
+						//printf("DESCONECTADO\n");
 						conectado = 0;//return -1;
 					}else{
 						processReq(data, req);
@@ -193,16 +186,9 @@ int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 			
 			i++;
 		}
-		
-
-		printf("Linea: %d, RC: %d\n", linea, rc);
-		//if ((rc - linea) != 0){
-		printf("Copiamos: '%s' en data->buff\n", buffer + linea);
+		//printf("Linea: %d, RC: %d\n", linea, rc);
+		//printf("Copiamos: '%s' en data->buff\n", buffer + linea);
 		strcpy(data->buff, buffer + linea);
-		//} else {
-		//	printf("RC antes de terminar readline es: %d\n",rc);
-		//	printf("Se leyo todo\n");
-		//}
 		data->buffSize = rc + data->buffSize - linea;
 		data->buff[data->buffSize] = '\0';
 
@@ -211,34 +197,26 @@ int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 			data->buffSize = 1;
 			data->buff[data->buffSize] = '\0';
 		}
-		
-		//printf("Cuando termina de leer: data->buffSize: %d, data->buff: %s\n", data->buffSize, data->buff);
 	}
 	if (!conectado)
-		return -1;
-
+		return 0;
 	return rc;
 }
 
 void handleConnText(eloop_data* data)
 {	
-	char buf[READ_SIZE];
-	int rc, csock = data->fd;
-	int err=0;
-	int* errP = &err;
-	/* Atendemos pedidos, uno por linea */
-	rc = fd_readline(data, csock, buf, errP);
+	int rc = fd_readline(data);
 
-	if ( rc == -2)
+	if ( rc == -1 )
 		quit("Fallo al leer");
 
-	if ( rc == -1 ){//&& data->buff[data->buffSize] == '\n' ){
+	if ( rc == 0){
 		desconectarCliente(data);
 		printf("Desconectar cliente\n");
 	}
 
 	 if ( rc > 0 ){
-		agregarClienteEpoll(csock, data->epfd, 0, (void*)data);
+		agregarClienteEpoll(data->fd, data->epfd, 0, (void*)data);
 	} 
 }
 
@@ -266,18 +244,15 @@ void *wait_for_clients(void *threadParam)
 				if (csock == -1){
 					quit("Fallo al aceptar un cliente");
 				} else {
-					printf("agregamos cliente\n");
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL);
 				}
 			} else {
-				printf("Pasa por epoll\n");
 				data->isText ? handleConnText(data) : handleConnBin(data);
-				}
+			}
 		}
 	}
 }
 
-//make clean && sudo make run
 int main(int argc, char **argv){
 
 	pthread_t t[MAX_THREADS];
@@ -296,10 +271,7 @@ int main(int argc, char **argv){
 		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
 	}
 
-	// Necesario?
-	for (int i = 0; i < MAX_THREADS; i++){
-		pthread_join(t[i], NULL);
-	}
+	// Contemplar opcion de cerrar el servidor
 
 	return 0;
 }
