@@ -66,9 +66,36 @@ int _PUT(Hashtable *ht, Node *node){
     int index = node->hash;
     pthread_mutex_lock( &ht->rlock[index] );
 
-    dlist_agregar_final( ht->row[index], node);
+    DNodo* elem = dlist_buscar_nodo(ht->row[index], node, equal_keys);
 
-    /// y agregar al lru.
+    if(elem == NULL){ // no esta en la lista.
+
+        DNodo* newnode = dlist_crear_nodo(node); /// no copiamos el valor, lo tomamos como puntero.
+        if(newnode == NULL){ /// si no pudimos crear el nodo:
+          pthread_mutex_unlock( &ht->rlock[index] );
+          destroy_node(node);
+          return EOOM;
+        }
+
+        DNodo* newnodeLRU = dlist_crear_nodo(NULL);
+
+         if(newnodeLRU == NULL){ /// si no pudimos crear el nodo:
+          pthread_mutex_unlock( &ht->rlock[index] );
+          
+          dlist_destruir_nodo(newnode,destroy_node);
+
+          return EOOM;
+        }
+
+
+        newnode->othernode = newnodeLRU; /// linkeamos los nodos entre si.
+        newnodeLRU->othernode = newnode;
+
+        dlist_agregar_final( ht->row[index], newnode);
+
+        pthread_mutex_lock( &ht->locklru );
+          dlist_agregar_final( ht->LRU, newnodeLRU);
+        pthread_mutex_unlock( &ht->locklru );
 
       pthread_mutex_unlock(&ht->rlock[index]);
 
