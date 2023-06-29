@@ -1,3 +1,4 @@
+#include "hash.h"
 #include "Node.h"
 
 void destroy_node(void* node){
@@ -14,14 +15,13 @@ void destroy_node(void* node){
     free(aux);
 }
 
-
 Node* create_node_from_K(char* key, int lenkey){ /// para el get y del
-    unsigned long slug = hash(key,lenkey);
+    unsigned long slug = hash_string(key);
     return create_node(key,NULL,lenkey,0,slug%TABLESIZE, slug, false );
 }
 
 Node* create_node_from_KV(char* key, int lenkey, char *value, int lenvalue){ /// para el put
-    unsigned long slug = hash(key,lenkey);
+    unsigned long slug = hash_string(key);
     return create_node(key,value,lenkey,lenvalue,slug%TABLESIZE, slug, printable(value,lenvalue) );
 }
 
@@ -42,9 +42,7 @@ bool equal_keys(void *na, void *nb){
     Node *b = (Node*)nb;
     bool samelen = (a->lenkey == b->lenkey);
     bool sameslug = (a->slug == b->slug);
-
     if(samelen && sameslug)
         return ( strcmp(a->key, b->key) == 0);
-
     return false;
 }

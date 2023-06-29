@@ -56,7 +56,7 @@ DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
   DNodo *aux = lista->primero;
   while(aux != NULL){
     if( compare(aux->dato, nodo) )
-        return aux->dato;
+        return aux;
   }
   return NULL;
 }

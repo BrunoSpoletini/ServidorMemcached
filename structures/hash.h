@@ -27,14 +27,19 @@ typedef struct {
 
 typedef char *(*FuncionObtencion) (void *dato);
 
-// Recibe una string y devuelve un número entre 0 y TABLESIZE
-int hash_string(char *value);
-
 // Crea una tabla hash vacia de tamaño TABLESIZE
 void inicializar_tabla(Hashtable *ht);
 
 void *tryalloc(Hashtable *ht, unsigned bytes)
 
+// Recibe una string y devuelve un número entre 0 y TABLESIZE
+int hash_string(char *value);
 
+void *evict(Hashtable *ht, unsigned bytes);
+void *tryalloc(Hashtable *ht, unsigned bytes);
+char *copycat(Hashtable *ht,char *s, int len);
+int _PUT(Hashtable *ht, Node *node);
+void* _GET(Hashtable *ht, Node *node);
+int _DEL(Hashtable *ht,Node *node);
 
 #endif                          /* __HASH_H__ */

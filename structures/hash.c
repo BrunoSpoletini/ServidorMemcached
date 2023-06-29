@@ -1,3 +1,4 @@
+#include <math.h>
 #include "hash.h"
 
 Hashtable *create_table() {
@@ -16,6 +17,14 @@ Hashtable *create_table() {
   return ht;
 }
 
+int hash_string(char *value) {
+  unsigned long long int key = 0;
+  for (int i = 0; value[i] != '\0'; i++) {
+    key += value[i] * pow(2, (i % 10));
+  }
+  key = key % TABLESIZE;
+  return (int) key;
+}
 
 void *evict(Hashtable *ht, unsigned bytes){
   /// tenemos que liberar bytes de la ht, soltando por la politica de desalojo.
@@ -33,14 +42,11 @@ void *tryalloc(Hashtable *ht, unsigned bytes){
 }
 
 char *copycat(Hashtable *ht,char *s, int len){
-
   char *c = tryalloc(ht , len);
   if(c == NULL){
     return NULL;
   }
-
   strcpy(c,s);
-  
   return c;
 }
 
@@ -60,36 +66,9 @@ int _PUT(Hashtable *ht, Node *node){
     int index = node->hash;
     pthread_mutex_lock( &ht->rlock[index] );
 
-    DNodo* elem = dlist_buscar_nodo(ht->row[index], node, equal_keys);
+    dlist_agregar_final( ht->row[index], node);
 
-    if(elem == NULL){ // no esta en la lista.
-
-        DNodo* newnode = dlist_crear_nodo(node); /// no copiamos el valor, lo tomamos como puntero.
-        if(newnode == NULL){ /// si no pudimos crear el nodo:
-          pthread_mutex_unlock( &ht->rlock[index] );
-          destroy_node(node);
-          return EOOM;
-        }
-
-        DNodo* newnodeLRU = dlist_crear_nodo(NULL);
-
-         if(newnodeLRU == NULL){ /// si no pudimos crear el nodo:
-          pthread_mutex_unlock( &ht->rlock[index] );
-          
-          dlist_destruir_nodo(newnode,destroy_node);
-
-          return EOOM;
-        }
-
-
-        newnode->othernode = newnodeLRU; /// linkeamos los nodos entre si.
-        newnodeLRU->othernode = newnode;
-
-        dlist_agregar_final( ht->row[index], newnode);
-
-        pthread_mutex_lock( &ht->locklru );
-          dlist_agregar_final( ht->LRU, newnodeLRU);
-        pthread_mutex_unlock( &ht->locklru );
+    /// y agregar al lru.
 
       pthread_mutex_unlock(&ht->rlock[index]);
 
@@ -118,15 +97,16 @@ void* _GET(Hashtable *ht, Node *node){ /// podemos usar un node vacio, que solo 
 
   DNodo *elem = dlist_buscar_nodo(ht->row[index], node, equal_keys);
   
-  if(elem == NULL)
-    return (void*)ENOTFOUND;
+  //destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
 
+  if(elem == NULL)
+    return NULL;//(void*)ENOTFOUND; DEBUG
 
   Node* data = elem->dato;
   char* retval = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
   if(retval == NULL)
-    return (void*)EOOM;
+    return NULL;//(void*)EOOM;
 
   updateLRU(ht,elem->othernode);
 
