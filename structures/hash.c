@@ -1,15 +1,22 @@
+#include <math.h>
 #include "hash.h"
 
 void inicializar_tabla(Hashtable *ht) {
-  
   for (int i = 0; i < TABLESIZE; i++) {
     ht->row[i] = dlist_crear();
     pthread_mutex_init(&ht->rlock[i], NULL); 
   }
   ht->stats = create_stats();
-
 }
 
+int hash_string(char *value) {
+  unsigned long long int key = 0;
+  for (int i = 0; value[i] != '\0'; i++) {
+    key += value[i] * pow(2, (i % 10));
+  }
+  key = key % TABLESIZE;
+  return (int) key;
+}
 
 void *evict(Hashtable *ht, unsigned bytes){
   /// tenemos que liberar bytes de la ht, soltando por la politica de desalojo.
@@ -27,14 +34,11 @@ void *tryalloc(Hashtable *ht, unsigned bytes){
 }
 
 char *copycat(Hashtable *ht,char *s, int len){
-
   char *c = tryalloc(ht , len);
   if(c == NULL){
     return NULL;
   }
-
   strcpy(c,s);
-  
   return c;
 }
 
@@ -45,7 +49,9 @@ int _PUT(Hashtable *ht, Node *node){
     int index = node->hash;
     pthread_mutex_lock( &ht->rlock[index] );
 
-    dlist_agregar_final( ht->row[index], node);
+    dlist_agregar_final( ht->row[index], (void*)node);
+
+    add_put(ht->stats);
 
     /// y agregar al lru.
 
@@ -63,20 +69,17 @@ void* _GET(Hashtable *ht, Node *node){ /// podemos usar un node vacio, que solo 
 
   pthread_mutex_lock( &ht->rlock[index] );
 
-
   DNodo *elem = buscar_nodo(ht->row[index], node, equal_keys);
   
-  destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
+  //destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
 
   if(elem == NULL)
-    return (void*)ENOTFOUND;
-
-  /// y agregar al lru.
+    return NULL;//(void*)ENOTFOUND; DEBUG
 
   char* retval = copycat(ht, ((Node*)elem->dato)->value , ((Node*)elem->dato)->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
   if(retval == NULL)
-    return (void*)EOOM;
+    return NULL;//(void*)EOOM;
 
   pthread_mutex_unlock(&ht->rlock[index]);
 

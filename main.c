@@ -108,7 +108,7 @@ int main(int argc, char **argv){
         quit("No se pueden bajar los privilegios.\n");  
 	
     if (access("./server", F_OK) == 0){
-		// execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
+		 //execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
         execl("./server" , "./server" , itos(text_socket) , itos(bin_socket), NULL); 
 	}else{
 		quit("El server no fue buildeado");

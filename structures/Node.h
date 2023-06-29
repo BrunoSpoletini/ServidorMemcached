@@ -14,9 +14,13 @@ typedef struct {
 
 
 void destroy_node(void* node);
+
 Node *create_node(char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long slug,bool printable);
+
 bool equal_keys(void *na, void *nb);
+
 Node* create_node_from_KV(char* key, int lenkey, char *value, int lenvalue);
+
 Node* create_node_from_K(char* key, int lenkey);
 
 

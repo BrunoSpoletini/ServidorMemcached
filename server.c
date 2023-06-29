@@ -13,7 +13,10 @@
 #include <sys/wait.h>  //Para usar wait
 #include <string.h>	   // strtok
 #include <pthread.h>
-#include "hash_table.h"
+#include "structures/hash.h"
+#include "structures/Node.h"
+#include "structures/stats.h"
+#include "structures/dlist.h"
 #include "common.h"
 #include "socket_handler.h"
 #include "utils.h"
@@ -48,59 +51,66 @@ El delete deberia devolver true o false si borro o no la clave
 
  */
 
+
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 //echo -n "\n" | echo -n "a" | echo -n " " | echo -n "T" | echo -n "U" | echo -n "P" | nc localhost 888
-HashTable hTable;
+
+Hashtable* hTable;
 
 void processReq(eloop_data* data, char** req){
-		HashTable *table = &hTable; //Temporal hasta q resolvamos la hashtable con colisiones
-		int size;
-		char clave[READ_SIZE]; //Esto no va a hacer falta, pq en la version nueva la clave y el valor son strings
+	
+	if (!strcmp(req[0], "PUT"))
+	{
+		Node* nodo = create_node_from_KV(req[1], strlen(req[1]), req[1], strlen(req[1]));
+		_PUT(hTable, nodo);
+		write(data->fd, "OK\n", 4);
+	}
+	else if (!strcmp(req[0], "DEL") && req[2] == NULL)
+	{
+		// Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
 
-		if (!strcmp(req[0], "PUT"))
-		{ // PUT test 123
-			pthread_mutex_lock(&mutex);
-			printf("llamamos a put, con argumentos %s y %s\n",req[1],req[2] );
-			insert(table, req[1], atoi(req[2]));
-			pthread_mutex_unlock(&mutex);
-			write(data->fd, "OK\n", 4);
-			/*
-			Node* node;
-			node = create_node(req[1], req[2], strlen(), )
-			
-			*/
+		// pthread_mutex_lock(&hTable->rlock[nodo->hash]);
+		// DNodo *nodoDlist = buscar_nodo(hTable->row[nodo->hash], (void*)nodo, equal_keys);
+		// if ( nodoDlist == NULL ){
+		// 	write(data->fd, "No se encontro la clave\n", 24);
+		// } else {
+		// 	eliminar_nodo(hTable->row[nodo->hash], (void*)nodo, destroy_node);
+		// 	add_del(hTable->stats);
+		// 	write(data->fd, "Clave valor eliminados exitosamente\n", 36);
+		// }
+		// pthread_mutex_unlock(&hTable->rlock[nodo->hash]);	
+		
+	}
+	else if (!strcmp(req[0], "GET") && req[2] == NULL)
+	{	
+		Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
+		
+		//write(data->fd, res, sizeof(res) );
+
+		// void* res = _GET(hTable, nodo);
+		// if ( *(int*)res == ENOTFOUND ){
+		// 	write(data->fd, "ENOTFOUND\n", 10);
+		// } else if ( *(int*)res == EOOM ){
+		// 	write(data->fd, "EOOM\n", 5);
+		// } else {
+		// 	write(data->fd, res, sizeof(res) );
+		// }
+
+		char* res = (char*)_GET(hTable, nodo);
+		if (res == NULL){ 
+			write(data->fd, "ENOTFOUND\n", 10);
+		} else {
+			write(data->fd, res, sizeof(res));
+			write(data->fd, "\n", 1);
 		}
-		else if (!strcmp(req[0], "DEL") && req[2] == NULL)
-		{
-			pthread_mutex_lock(&mutex);
-			printf("llamamos a del, con argumentos %s\n",req[1] );
-			delete (table, req[1]);
-			pthread_mutex_unlock(&mutex);
-			write(data->fd, "Clave-valor eliminado exitosamente\n", 35);
-		}
-		else if (!strcmp(req[0], "GET") && req[2] == NULL)
-		{
-			pthread_mutex_lock(&mutex);
-			int resGet = get(table, req[1]);
-			pthread_mutex_unlock(&mutex);
-			if (resGet == -1)
-			{
-				write(data->fd, "No existe clave para el valor ingresado\n", 40);
-			}
-			else
-			{
-				sprintf(clave, "%d", resGet);
-				size = strlen(clave);
-				write(data->fd, clave, size);
-				write(data->fd, "\n", 1);
-			}
-		} else if (!strcmp(req[0], "STAT") && req[1] == NULL){
-			printf("Stat\n");
-			//do stuff
-		} 
+
+	} else if (!strcmp(req[0], "STAT") && req[1] == NULL){
+		printf("Stat\n");
+		//do stuff
+	}
 }
 
-int validateReq(char *req[3], int words){
+int validateReq(char **req, int words){
 	if (((strcmp("PUT", req[0]) == 0) && words == 3) ||
 		((strcmp("GET", req[0]) == 0) && words == 2) ||
 		((strcmp("DEL", req[0]) == 0) && words == 2) ||
@@ -121,7 +131,7 @@ void desconectarCliente(eloop_data* data){
 	close(data->fd);
 }
 
-int parseLine(eloop_data* data, char* buff, char* req[3]){
+int parseLine(eloop_data* data, char* buff, char** req){
 	int words = 0;
 	char* token = strtok(buff, " \n");
 	if(buff[0] == '\0') // Linea vacia
@@ -134,6 +144,7 @@ int parseLine(eloop_data* data, char* buff, char* req[3]){
 			quit("Fallo malloc");
 		
 		strcpy(req[i], token);
+		req[i][strlen(token) + 1] = '\0';
 		req[i + 1] = NULL;
 		token = strtok(NULL, " \n");
 	}
@@ -167,7 +178,7 @@ int fd_readline(eloop_data* data)
 				} else if ( data->notPrintable == 1) {
 					write(data->fd, "Comando invalido - Caracteres no imprimible\n", 44);
 				} else {
-					char *req[3];
+					char **req = malloc(sizeof(char*) * 3);
 					//printf("Lo que se le pasa al parser: -%s-\n", buffer+linea);
 					ret =  conectado ? parseLine(data, buffer + linea, req) : -2;
 					if ( ret == -1 ){
@@ -231,7 +242,6 @@ void *wait_for_clients(void *threadParam)
 	epoll_fd = ((int*)threadParam)[0];
 	textSock = ((int*)threadParam)[1];
 	binSock = ((int*)threadParam)[2];
-
 	struct epoll_event events[MAX_EVENTS];
 	while (1)
 	{
@@ -254,9 +264,9 @@ void *wait_for_clients(void *threadParam)
 }
 
 int main(int argc, char **argv){
-
+	hTable = malloc(sizeof(Hashtable));
+	inicializar_tabla(hTable);
 	pthread_t t[MAX_THREADS];
-	initHashTable(&hTable);
 	int textSock, binSock;
 	textSock = atoi(argv[1]);
 	binSock = atoi(argv[2]); 
@@ -270,8 +280,13 @@ int main(int argc, char **argv){
 	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
 	}
+	
 
 	// Contemplar opcion de cerrar el servidor
+	//destruir_tabla(hTable);
+	for (int i = 0; i < MAX_THREADS; i++){
+		pthread_join(t[i], NULL);
+	}
 
 	return 0;
 }
