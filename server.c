@@ -53,42 +53,8 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 HashTable hTable;
 
 
-/*
-errP = 1 -> EINVAL
-errP = 2 -> linea con caracter no imprimible
-Leeemos hasta llegar a un /n, si superamos los 2048 caracteres leyendo el /n seteamos la flag de error EINVAL
-En caso de no llegar al /n, si superamos 2048 seteamos flag EINVAL, y si no los superamos, 
-revisamos que el caracter que estamos leyendo sea imprimible.
-*/
-int fd_readline(int fd, char *buf, int* errP)
-{
-	int rc;
-	int i = 0;
-	while ((rc = read(fd, buf + i, 1)) > 0)
-	{
-		if (buf[i] == '\n'){
-			if (i > 2048)
-				*errP = 1;
-			break;
-		} else {
-			if (i > 2048){
-				*errP = 1;
-				i = 1;
-				printf("EINVAL");
-			} else if ( buf[i] < 32 || 126 < buf[i]){
-				printf("%d\n", buf[i]);
-				*errP = 2;
-			}
-		}
-		i++;
-		// //fflush( stdin );
-	printf("%d - ", *errP);
-	}
-	if (rc < 0)
-		return -1;
 
-	return i;
-}
+
 
 void processReq(eloop_data* data, char** req){
 		HashTable *table = &hTable; //Temporal hasta q resolvamos la hashtable con colisiones
@@ -138,6 +104,8 @@ void processReq(eloop_data* data, char** req){
 		} 
 }
 
+
+
 int validateReq(char *req[3], int words){
 	if (((strcmp("PUT", req[0]) == 0) && words == 3) ||
 		((strcmp("GET", req[0]) == 0) && words == 2) ||
@@ -149,9 +117,22 @@ int validateReq(char *req[3], int words){
 	}
 }
 
+void desconectarCliente(eloop_data* data){
+	write(data->fd, "Cliente desconectado\n", 21);
+	if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, data->fd, NULL) == -1)
+	{
+		close(data->epfd);
+		quit("Fallo al quitar fd de epoll\n");
+	}
+	close(data->fd);
+}
+
 int parseLine(eloop_data* data, char* buff, char* req[3]){
 	int words = 0;
 	char* token = strtok(buff, " \n");
+
+	if(buff[0] == '\0')
+		return -2;
 
 	for (int i = 0; token != NULL && words <= 3; i++)
 	{
@@ -166,12 +147,79 @@ int parseLine(eloop_data* data, char* buff, char* req[3]){
 		token = strtok(NULL, " \n");
 	}
 	
+	
 	if (words > 0 && words <= 3 && validateReq(req, words))
 		return 0;
 	return -1;
 }
 
 
+/*
+errP = 1 -> EINVAL
+errP = 2 -> linea con caracter no imprimible
+Leeemos hasta llegar a un /n, si superamos los 2048 caracteres leyendo el /n seteamos la flag de error EINVAL
+En caso de no llegar al /n, si superamos 2048 seteamos flag EINVAL, y si no los superamos, 
+revisamos que el caracter que estamos leyendo sea imprimible.
+*/
+int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
+{
+	int ret, conectado=1;
+	int i=0, linea = 0;
+	char buffer[READ_SIZE];
+	strcpy(buffer, data->buff);
+	int rc = read(fd, buffer + data->buffSize, READ_SIZE - (data->buffSize) - 1);
+	//epoll_wait va a llamar a handle_text siempre que haya non-cero infomation en el socket DEBUG
+	printf("Se llama a readline\n");
+	if (rc > 0){
+		printf("Se lee: [");
+		for(int k=0; k<(rc+data->buffSize); k++){printf("%c", buffer[k]);}
+		printf("]\n");
+		buffer[data->buffSize + rc] = '\0';
+		while ( conectado && (i <= rc) ){ // Recorremos la cadena recibida
+
+			if ( (buffer[data->buffSize+i] < 32 && buffer[data->buffSize+i] != 10 && buffer[data->buffSize+i] != 13 && buffer[data->buffSize+i] != 0) || 126 < buffer[data->buffSize+i]){
+				printf("Caracter no imprimible: %d, en el i; %d\n", buffer[data->buffSize+i], i);
+				data->notPrintable = 1;
+			}
+			if ( buffer[data->buffSize+i] == '\n' ){
+				buffer[data->buffSize+i] = '\0';
+				if ( data->notPrintable == 1) {
+					write(data->fd, "Comando invalido - Caracteres no imprimible\n", 44);
+				} else {
+					char *req[3];
+					printf("Lo que se le pasa al parser: -%s-\n", buffer+linea);
+					ret =  conectado ? parseLine(data, buffer + linea, req) : -2;
+					if ( ret == -1 ){
+						write(data->fd, "Comando invalido\n", 17);
+					} else if ( ret == -2){ //Se desconecta el cliente
+						printf("DESCONECTADO\n");
+						conectado = 0;//return -1;
+					}else{
+						processReq(data, req);
+					}
+				}
+				data->notPrintable = 0;
+				linea = data->buffSize + i + 1;
+			}
+			i++;
+		}
+		printf("Linea: %d, RC: %d\n", linea, rc);
+		//if ((rc - linea) != 0){
+		printf("Copiamos: '%s' en data->buff\n", buffer + linea);
+		strcpy(data->buff, buffer + linea);
+		//} else {
+		//	printf("RC antes de terminar readline es: %d\n",rc);
+		//	printf("Se leyo todo\n");
+		//}
+		data->buffSize = rc + data->buffSize - linea;
+		data->buff[data->buffSize] = '\0';
+		//printf("Cuando termina de leer: data->buffSize: %d, data->buff: %s\n", data->buffSize, data->buff);
+	}
+	if (!conectado)
+		return -1;
+
+	return rc;
+}
 
 void handleConnText(eloop_data* data)
 {	
@@ -180,52 +228,19 @@ void handleConnText(eloop_data* data)
 	int err=0;
 	int* errP = &err;
 	/* Atendemos pedidos, uno por linea */
-	rc = fd_readline(csock, buf, errP);
-	printf("leimos %d caracteres\n",rc);
+	rc = fd_readline(data, csock, buf, errP);
 
-	if ( rc == -1)
+	if ( rc == -2)
 		quit("Fallo al leer");
 
-	if ( rc == 0 ){
-		/* Linea vacia, se cerró la conexión */
-		write(csock, "Cliente desconectado\n", 21);
-		if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, csock, NULL) == -1)
-		{
-			close(data->epfd);
-			quit("Fallo al quitar fd de epoll\n");
-		}
-		close(csock);
-	} else {
-		if ( buf[rc] == '\n' ){ //Se recibio una linea completa
-
-			if (*errP == 1 || data->einval || (rc + data->buffSize) > 2048){ // EINVAL
-				write ( csock, "EINVAL\n",7);	
-			} else if (*errP == 2 || data->notPrintable){ // Caracter no imprimible
-				write(csock, "Comando invalido - Caracteres no imprimible\n", 44);
-			} else { // No hay error
-				char *req[3];
-				if ( parseLine(data, buf, req) == -1 ){
-					write(csock, "Comando invalido\n", 17);
-				} else {
-					processReq(data, req);
-				}
-			}
-			*errP = 0;
-			data->einval = 0;
-			data->notPrintable = 0;
-			data->buffSize = 0;
-			handleConnText(data);
-		} else {
-			// FALTA TESTEAR BIEN - DEBUG
-			data->einval = (*errP == 1);
-			data->notPrintable = (*errP == 2);
-			strcpy(data->buff + data->buffSize, buf );
-			data->buffSize += rc;
-			//for(int i=0; i<data->buffSize;i++){printf("%c-", data->buff[i]);} // DEBUG
-			//printf("\n");// DEBUG
-			agregarClienteEpoll(csock, data->epfd, 0, (void*)data);
-		}
+	if ( rc == -1 ){//&& data->buff[data->buffSize] == '\n' ){
+		desconectarCliente(data);
+		printf("Desconectar cliente\n");
 	}
+
+	 if ( rc > 0 ){
+		agregarClienteEpoll(csock, data->epfd, 0, (void*)data);
+	} 
 }
 
 void handleConnBin(eloop_data* data){

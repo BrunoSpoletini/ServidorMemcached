@@ -55,8 +55,9 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr){
 		eloop->epfd = epoll_fd;
 		eloop->isText = (init==1);
 		if ( eloop->isText ) {
-			char* buffer = malloc(sizeof(char)*READ_SIZE);
+			char* buffer = malloc(sizeof(char)*READ_SIZE + 1);
 			eloop->buff = buffer;
+			eloop->buffSize = 0;
 		}
 		eloop->einval = 0;
 	    eloop->notPrintable = 0;

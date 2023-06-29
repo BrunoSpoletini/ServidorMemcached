@@ -48,7 +48,7 @@ typedef struct _eloop_data {
 	int keySize;
 	char* key;
 	int valueSize;
-	char* key;
+	char* value;
 } eloop_data;
 
 /*
