@@ -2,8 +2,15 @@
 
 void destroy_node(void* node){
     Node *aux = (Node*)node;
-    free(aux->key);
-    free(aux->value);
+
+    if(aux == NULL)
+        return;
+
+    if(aux->key != NULL)
+        free(aux->key);
+    if(aux->value != NULL)
+        free(aux->value);
+        
     free(aux);
 }
 

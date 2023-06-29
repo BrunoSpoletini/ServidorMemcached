@@ -84,7 +84,7 @@ void conjunto_unificar_intervalos(DList * lista) {
         && ((obt_extremo(nodo->ant) == (obt_inicio(nodo) - 1))
             || (obt_extremo(nodo->ant) == (obt_inicio(nodo))))) {
       ((ElemConj *) (nodo->dato))->inicio = obt_inicio(nodo->ant);
-      eliminar_nodo(lista, nodo->ant, conjunto_eliminar);
+      dlist_eliminar_nodo(lista, nodo->ant, conjunto_eliminar);
     }
 
   }

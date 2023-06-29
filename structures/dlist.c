@@ -8,6 +8,22 @@ DList *dlist_crear() {
   return lista;
 }
 
+DNodo *dlist_crear_nodo(void *dato){
+  DNodo *nuevoNodo = tryalloc( sizeof(DNodo) );
+  
+  if(nuevonodo == NULL)
+    return NULL;
+
+  nuevoNodo->dato = dato;
+  nuevoNodo->sig = NULL;
+  nuevoNodo->ant = NULL;
+  nuevoNodo->othernode = NULL;
+  return nuevoNodo;
+}
+
+
+
+
 void dlist_destruir(void *lista) {
   DNodo *nodoAEliminar;
   while (((DList *) lista)->primero != NULL) {
@@ -19,10 +35,10 @@ void dlist_destruir(void *lista) {
   free(lista);
 }
 
-void dlist_agregar_final(DList * lista, void *dato) {
-  DNodo *nuevoNodo = malloc(sizeof(DNodo));
-  nuevoNodo->dato = dato;
-  nuevoNodo->sig = NULL;
+
+
+
+void dlist_agregar_final(DList * lista, DNodo *nuevoNodo) {
   nuevoNodo->ant = lista->ultimo;
 
   if (lista->ultimo != NULL) {
@@ -35,7 +51,7 @@ void dlist_agregar_final(DList * lista, void *dato) {
 }
 
 
-DNodo *buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
+DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
 
   DNodo *aux = lista->primero;
   while(aux != NULL){
@@ -45,7 +61,13 @@ DNodo *buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
   return NULL;
 }
 
-void eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {
+void dlist_destruir_nodo(DNodo * nodo, FuncionVisitante liberarDato){
+  liberarDato(nodo->dato); 
+  free(nodo);
+}
+
+
+void dlist_deslinkear(DList * lista, DNodo * nodo){
   if (nodo->ant == NULL)
     lista->primero = nodo->sig;
   else
@@ -54,7 +76,11 @@ void eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {
     lista->ultimo = nodo->ant;
   else
     nodo->sig->ant = nodo->ant;
+}
 
-  liberarDato(nodo->dato); 
-  free(nodo);
+void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {
+
+  dlist_deslinkear(lista,nodo);
+  dlist_destruir_nodo(nodo,liberarDato);
+
 }

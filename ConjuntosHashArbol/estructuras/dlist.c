@@ -103,13 +103,13 @@ void dlist_eliminar_repetidos(DList * lista, Compara comparar,
   DNodo *nodo = lista->primero;
   while (nodo != NULL) {
     if (nodo->ant != NULL && comparar(nodo->dato, nodo->ant->dato) == 0) {
-      eliminar_nodo(lista, nodo->ant, liberarDato);
+      dlist_eliminar_nodo(lista, nodo->ant, liberarDato);
     }
     nodo = nodo->sig;
   }
 }
 
-void eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {
+void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {
   if (nodo->ant == NULL)
     lista->primero = nodo->sig;
   else

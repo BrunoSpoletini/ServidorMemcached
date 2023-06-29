@@ -33,6 +33,8 @@ int hash_string(char *value);
 // Crea una tabla hash vacia de tamaño TABLESIZE
 void inicializar_tabla(Hashtable *ht);
 
+void *tryalloc(Hashtable *ht, unsigned bytes)
+
 
 
 #endif                          /* __HASH_H__ */

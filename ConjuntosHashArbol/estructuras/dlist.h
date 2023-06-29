@@ -55,7 +55,7 @@ void dlist_eliminar_repetidos(DList * lista, Compara comparar,
                               FuncionVisitante liberarDato);
 
 // Dada una lista y un nodo, elimina el nodo de la lista y libera la memoria
-void eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato);
+void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato);
 
 // Realiza la comparacion entre los alias de dos DLists
 int dlist_comparar(void *dato1, void *dato2);
