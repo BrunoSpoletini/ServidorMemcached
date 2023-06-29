@@ -52,19 +52,15 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 //echo -n "\n" | echo -n "a" | echo -n " " | echo -n "T" | echo -n "U" | echo -n "P" | nc localhost 888
 HashTable hTable;
 
-
-
-
-
 void processReq(eloop_data* data, char** req){
 		HashTable *table = &hTable; //Temporal hasta q resolvamos la hashtable con colisiones
 		int size;
-		char clave[2048]; //Esto no va a hacer falta, pq en la version nueva la clave y el valor son strings
+		char clave[READ_SIZE]; //Esto no va a hacer falta, pq en la version nueva la clave y el valor son strings
 
 		if (!strcmp(req[0], "PUT"))
 		{ // PUT test 123
 			pthread_mutex_lock(&mutex);
-			printf("llamamos a put, con argumentos %s y %d\n",req[1],atoi(req[2]) );
+			printf("llamamos a put, con argumentos %s y %s\n",req[1],req[2] );
 			insert(table, req[1], atoi(req[2]));
 			pthread_mutex_unlock(&mutex);
 			write(data->fd, "OK\n", 4);
@@ -104,8 +100,6 @@ void processReq(eloop_data* data, char** req){
 		} 
 }
 
-
-
 int validateReq(char *req[3], int words){
 	if (((strcmp("PUT", req[0]) == 0) && words == 3) ||
 		((strcmp("GET", req[0]) == 0) && words == 2) ||
@@ -130,24 +124,19 @@ void desconectarCliente(eloop_data* data){
 int parseLine(eloop_data* data, char* buff, char* req[3]){
 	int words = 0;
 	char* token = strtok(buff, " \n");
-
-	if(buff[0] == '\0')
+	if(buff[0] == '\0') // Linea vacia
 		return -2;
-
 	for (int i = 0; token != NULL && words <= 3; i++)
 	{
 		words++;
-		req[i] = malloc(strlen(token) + 1);
+		req[i] = malloc(sizeof(char)*(strlen(token) + 1));
 		if (req[i] == NULL)
 			quit("Fallo malloc");
 		
 		strcpy(req[i], token);
 		req[i + 1] = NULL;
-
 		token = strtok(NULL, " \n");
 	}
-	
-	
 	if (words > 0 && words <= 3 && validateReq(req, words))
 		return 0;
 	return -1;
@@ -155,20 +144,17 @@ int parseLine(eloop_data* data, char* buff, char* req[3]){
 
 
 /*
-errP = 1 -> EINVAL
-errP = 2 -> linea con caracter no imprimible
-Leeemos hasta llegar a un /n, si superamos los 2048 caracteres leyendo el /n seteamos la flag de error EINVAL
-En caso de no llegar al /n, si superamos 2048 seteamos flag EINVAL, y si no los superamos, 
+Leeemos hasta llegar a un /n, si superamos los READ_SIZE caracteres leyendo el /n seteamos la flag de error EINVAL
+En caso de no llegar al /n, si superamos READ_SIZE seteamos flag EINVAL, y si no los superamos, 
 revisamos que el caracter que estamos leyendo sea imprimible.
 */
 int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 {
 	int ret, conectado=1;
 	int i=0, linea = 0;
-	char buffer[READ_SIZE];
+	char buffer[READ_SIZE+2];
 	strcpy(buffer, data->buff);
-	int rc = read(fd, buffer + data->buffSize, READ_SIZE - (data->buffSize) - 1);
-	//epoll_wait va a llamar a handle_text siempre que haya non-cero infomation en el socket DEBUG
+	int rc = read(fd, buffer + data->buffSize, READ_SIZE - (data->buffSize)  );
 	printf("Se llama a readline\n");
 	if (rc > 0){
 		printf("Se lee: [");
@@ -183,7 +169,9 @@ int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 			}
 			if ( buffer[data->buffSize+i] == '\n' ){
 				buffer[data->buffSize+i] = '\0';
-				if ( data->notPrintable == 1) {
+				if ( data->einval ){
+					write(data->fd, "EINVAL\n", 7);
+				} else if ( data->notPrintable == 1) {
 					write(data->fd, "Comando invalido - Caracteres no imprimible\n", 44);
 				} else {
 					char *req[3];
@@ -199,10 +187,14 @@ int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 					}
 				}
 				data->notPrintable = 0;
+				data->einval = 0;
 				linea = data->buffSize + i + 1;
 			}
+			
 			i++;
 		}
+		
+
 		printf("Linea: %d, RC: %d\n", linea, rc);
 		//if ((rc - linea) != 0){
 		printf("Copiamos: '%s' en data->buff\n", buffer + linea);
@@ -213,6 +205,13 @@ int fd_readline(eloop_data* data, int fd, char *buf, int* errP)
 		//}
 		data->buffSize = rc + data->buffSize - linea;
 		data->buff[data->buffSize] = '\0';
+
+		if ( data->buffSize >= READ_SIZE && linea == 0 ) {
+			data->einval = 1;
+			data->buffSize = 1;
+			data->buff[data->buffSize] = '\0';
+		}
+		
 		//printf("Cuando termina de leer: data->buffSize: %d, data->buff: %s\n", data->buffSize, data->buff);
 	}
 	if (!conectado)
