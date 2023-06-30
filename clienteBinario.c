@@ -182,23 +182,23 @@ void get(const char *k)
 	}
 
 	/* Ver respuesta */
-	{
-		// int cod = 0;
-		// readn(fd, &cod, 1);
+	{	printf("\nRESPUESTA:\n");
+		int cod = 0;
+		readn(fd, &cod, 1);
 
-		// if (cod == ENOTFOUND) {
-		// 	fprintf(stderr, "ENOTFOUND\n");
-		// 	exit(1);
-		// } else if (cod != OK) {
-		// 	die("error en pedido, devolvió %i", cod);
-		// }
+		if (cod == ENOTFOUND) {
+			fprintf(stderr, "ENOTFOUND\n");
+			exit(1);
+		} else if (cod != OK) {
+			die("error en pedido, devolvió %i", cod);
+		}
 
-		// int len;
-		// void *buf;
-		// recv_var(fd, &len, &buf);
-		// writen(1, buf, len);
-		// free(buf);
-		// fprintf(stderr, "\nOK\n");
+		int len;
+		void *buf;
+		recv_var(fd, &len, &buf);
+		writen(1, buf, len);
+		free(buf);
+		fprintf(stderr, "\nOK\n");
 	}
 }
 
@@ -216,7 +216,7 @@ void del(const char *k)
 	}
 
 	/* Ver respuesta */
-	{
+	{	printf("\nRESPUESTA:\n");
 		int cod = 0;
 		read(fd, &cod, 1);
 
@@ -265,15 +265,16 @@ void put(const char *k)
 		int comm = PUT;
 		writen(fd, &comm, 1);
 		send_var(fd, strlen(k), k);
-
-		int len;
-		char *buf = input(&len);
-		send_var(fd, len, buf);
-		free(buf);
+		send_var(fd, strlen(k), k);
+		//int len;
+		//char *buf = input(&len);
+		//send_var(fd, len, buf);
+		//free(buf);
 	}
 
 	/* Ver respuesta */
-	{
+	{	
+		printf("\nRESPUESTA:\n");
 		int cod = 0;
 		readn(fd, &cod, 1);
 
@@ -295,7 +296,7 @@ void stats()
 		writen(fd, &comm, 1);
 	}
 	/* Ver respuesta */
-	{
+	{	printf("\nRESPUESTA:\n");
 		int cod = 0;
 		readn(fd, &cod, 1);
 

@@ -77,15 +77,13 @@ int main()
 
 	for (i = 0; i < N; i++) {
 
-		// Cliente conectado
-		cto = read(sock[i], buffer, sizeof(buffer) - 1);
-		if (cto < 0) {
-			perror("CLNT: Error leyendo");
-			return -1;
-		}
-		printf("%s\n", buffer);
-
-
+		// // Cliente conectado
+		// cto = read(sock[i], buffer, sizeof(buffer) - 1);
+		// if (cto < 0) {
+		// 	perror("CLNT: Error leyendo");
+		// 	return -1;
+		// }
+		// printf("%s\n", buffer);
 
 		int rc = 0;
 		sprintf(buffer2,"PUT C%d %d\nAWDS\nGET C430\nPUT clave val", i+430, i+430);

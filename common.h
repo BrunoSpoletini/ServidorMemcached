@@ -36,6 +36,12 @@ enum code {
 // Cierra el programa e imprime un mensaje de error
 void quit(char *s);
 
+// Convierte una string de un comando en su respectivo codigo
+int str_to_comm(char* str);
+
+// Convierte un comando a su respectiva string
+const char *code_str(enum code e);
+
  typedef struct Hashtable Hashtable;
 
 /* Estructura que almacena los datos de cada fd agregado a epoll */

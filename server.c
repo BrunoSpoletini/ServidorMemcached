@@ -80,6 +80,7 @@ void *wait_for_clients(void *threadParam)
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL, hTable);
 				}
 			} else {
+				printf("EPOLL\n");
 				handleConn(data);
 			}
 		}

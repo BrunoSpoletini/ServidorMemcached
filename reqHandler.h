@@ -16,7 +16,7 @@ void handleConn(eloop_data* data);
 
 void processReq(eloop_data* data, char** req);
 
-int validateReq(char **req, int words);
+int validateReq(eloop_data* data, int words);
 
 int parseLineText(eloop_data* data, char* buff, char** req);
 
