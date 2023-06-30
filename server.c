@@ -86,9 +86,11 @@ void *wait_for_clients(void *threadParam)
 	}
 }
 
+
+
 int main(int argc, char **argv){
+
 	hTable =  create_table();
-	pthread_t t[MAX_THREADS];
 	int textSock, binSock;
 	textSock = atoi(argv[1]);
 	binSock = atoi(argv[2]); 
@@ -99,14 +101,19 @@ int main(int argc, char **argv){
 	agregarSocketEpoll(textSock, epoll);
 	agregarSocketEpoll(binSock, epoll);
 
-	for (int i = 0; i < MAX_THREADS; i++){
+
+	long Nprocessors = sysconf(_SC_NPROCESSORS_ONLN);
+	
+	pthread_t t[Nprocessors];
+
+	for (int i = 0; i < Nprocessors; i++){
 		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
 	}
 	
 
 	// Contemplar opcion de cerrar el servidor
 	//destruir_tabla(hTable);
-	for (int i = 0; i < MAX_THREADS; i++){
+	for (int i = 0; i < Nprocessors; i++){
 		pthread_join(t[i], NULL);
 	}
 

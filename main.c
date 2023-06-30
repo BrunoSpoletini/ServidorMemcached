@@ -55,7 +55,10 @@ bool std_down_privileges(){
 	if (getuid() != 0)
 		return true;
 
-	if ( (setgid(1000) == -1) || (setuid(1000) == -1) )
+
+	char *s =getenv("SUDO_UID"); /// usuario que llamo con sudo.
+
+	if ( (setuid( atoi(s) ) == -1) )
 		return false;
 
 	if (getuid() != 0)
@@ -106,7 +109,8 @@ int main(int argc, char **argv){
 
 	if (!std_down_privileges())
         quit("No se pueden bajar los privilegios.\n");  
-	
+
+
     if (access("./server", F_OK) == 0){
 		 //execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
         execl("./server" , "./server" , itos(text_socket) , itos(bin_socket), NULL); 
