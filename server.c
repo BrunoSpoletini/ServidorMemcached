@@ -61,47 +61,41 @@ void processReq(eloop_data* data, char** req){
 	
 	if (!strcmp(req[0], "PUT"))
 	{
-		Node* nodo = create_node_from_KV(req[1], strlen(req[1]), req[1], strlen(req[1]));
+		Node* nodo = create_node_from_KV(req[1], strlen(req[1]), req[2], strlen(req[2]));
 		_PUT(hTable, nodo);
 		write(data->fd, "OK\n", 4);
 	}
 	else if (!strcmp(req[0], "DEL") && req[2] == NULL)
 	{
-		// Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
+		Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
 
-		// pthread_mutex_lock(&hTable->rlock[nodo->hash]);
-		// DNodo *nodoDlist = buscar_nodo(hTable->row[nodo->hash], (void*)nodo, equal_keys);
-		// if ( nodoDlist == NULL ){
-		// 	write(data->fd, "No se encontro la clave\n", 24);
-		// } else {
-		// 	eliminar_nodo(hTable->row[nodo->hash], (void*)nodo, destroy_node);
-		// 	add_del(hTable->stats);
-		// 	write(data->fd, "Clave valor eliminados exitosamente\n", 36);
-		// }
-		// pthread_mutex_unlock(&hTable->rlock[nodo->hash]);	
+		int res = _DEL(hTable, nodo);
+
+		if ( res == OK ){
+			write(data->fd, "OK\n", 3);
+		} else {
+			write(data->fd, "ENOTFOUND\n", 10);
+		}
 		
 	}
 	else if (!strcmp(req[0], "GET") && req[2] == NULL)
 	{	
 		Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
-		
-		//write(data->fd, res, sizeof(res) );
+		char* res;
+		int ret = _GET(hTable, nodo, res);
 
-		// void* res = _GET(hTable, nodo);
-		// if ( *(int*)res == ENOTFOUND ){
-		// 	write(data->fd, "ENOTFOUND\n", 10);
-		// } else if ( *(int*)res == EOOM ){
-		// 	write(data->fd, "EOOM\n", 5);
-		// } else {
-		// 	write(data->fd, res, sizeof(res) );
-		// }
-
-		char* res = (char*)_GET(hTable, nodo);
-		if (res == NULL){ 
+		switch ( ret )
+		{
+		case ENOTFOUND:
 			write(data->fd, "ENOTFOUND\n", 10);
-		} else {
+			break;
+		case EOOM:
+			write(data->fd, "EOOM\n", 10);
+			break;
+		default:
 			write(data->fd, res, sizeof(res));
 			write(data->fd, "\n", 1);
+			break;
 		}
 
 	} else if (!strcmp(req[0], "STAT") && req[1] == NULL){

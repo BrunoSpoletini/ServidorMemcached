@@ -51,6 +51,29 @@ typedef struct _eloop_data {
 	char* value;
 } eloop_data;
 
+
+typedef struct {
+    struct DList *row[TABLESIZE];
+    pthread_mutex_t rlock[TABLESIZE];
+    struct DList *LRU;
+    pthread_mutex_t locklru;
+    struct Stats *stats;
+}Hashtable;
+
+
+typedef struct _DNodo {
+  void *dato;
+  struct _DNodo *ant;
+  struct _DNodo *sig;
+  struct _DNodo *othernode;
+} DNodo;
+
+typedef struct {
+  DNodo *primero;
+  DNodo *ultimo;
+} DList;
+
+
 /*
 Es lo que dio la catedra, lo vamos descomentando a medida q lo vayamos usando
 int valid_rq(int code);

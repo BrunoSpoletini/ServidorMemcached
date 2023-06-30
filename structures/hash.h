@@ -15,16 +15,6 @@
 
 
 
-typedef struct {
-    struct DList *row[TABLESIZE];
-    pthread_mutex_t rlock[TABLESIZE];
-    struct DList *LRU;
-    pthread_mutex_t locklru;
-    struct Stats *stats;
-}Hashtable;
-
-
-
 typedef char *(*FuncionObtencion) (void *dato);
 
 // Crea una tabla hash vacia de tamaño TABLESIZE

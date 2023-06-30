@@ -166,15 +166,17 @@ int _GET(Hashtable *ht, Node *node, char* retval){ /// podemos usar un node vaci
   
   //destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
 
-  if(elem == NULL)
-    return ENOTFOUND;//(void*)ENOTFOUND; DEBUG
-
+  if(elem == NULL){
+    pthread_mutex_unlock( &ht->rlock[index] );
+    return ENOTFOUND;
+  }
   Node* data = elem->dato;
   retval = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
-  if(retval == NULL)
-    return EOOM;//(void*)EOOM;
-
+  if(retval == NULL){
+    pthread_mutex_unlock( &ht->rlock[index] );
+    return EOOM;
+  }
   updateLRU(ht,elem->othernode);
 
   pthread_mutex_unlock(&ht->rlock[index]);
@@ -196,10 +198,10 @@ int _DEL(Hashtable *ht,Node *node){ /// podemos usar un node vacio, que solo con
 
   DNodo *elem = dlist_buscar_nodo(ht->row[index], node, equal_keys);
   
-  
-  if(elem == NULL)
+  if(elem == NULL){
+    pthread_mutex_unlock( &ht->rlock[index] );
     return ENOTFOUND;
-
+  }
   
   dlist_eliminar_nodo(ht->LRU, elem->othernode, dummyfree); /// el nodo de la LRU.
   dlist_eliminar_nodo(ht->row[index], elem, destroy_node);

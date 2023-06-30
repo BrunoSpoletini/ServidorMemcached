@@ -6,20 +6,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include "../common.h"
 #include "hash.h"
 
 
-typedef struct _DNodo {
-  void *dato;
-  struct _DNodo *ant;
-  struct _DNodo *sig;
-  struct _DNodo *othernode;
-} DNodo;
 
-typedef struct {
-  DNodo *primero;
-  DNodo *ultimo;
-} DList;
+
 
 typedef void (*FuncionVisitante) (void *dato);
 
@@ -40,7 +32,7 @@ void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDa
 
 DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare);
 
-DNodo *dlist_crear_nodo(struct Hashtable *ht,void *dato);
+DNodo *dlist_crear_nodo(Hashtable *ht,void *dato);
 
 
 void dlist_deslinkear(DList * lista, DNodo * nodo);
