@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-c -Wall -pthread
 DIR=structures
-SOURCE=server.c socket_handler.c common.c utils.c ./$(DIR)/dlist.c ./$(DIR)/hash.c ./$(DIR)/stats.c ./$(DIR)/Node.c
+SOURCE=server.c socket_handler.c reqHandler.c common.c utils.c ./$(DIR)/dlist.c ./$(DIR)/hash.c ./$(DIR)/stats.c ./$(DIR)/Node.c
 OBJ=$(SOURCE:.c=.o)
 EXE=server
 

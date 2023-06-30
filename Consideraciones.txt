@@ -1,6 +1,13 @@
 git grep "DEBUG"
 en el dir principal para ver lo que queda por limpiar en el proyecto
 
+
+HANDLERS:
+processReqTexto por ahi se puede usar para binario tambien,
+lo unico que cambiaria es el GET, y se puede usar eloop->isText para checkear
+validateReq tambien se puede reutilizar, con eloop->isText
+
+
 politica de desalojo:
 desalojar la clave valor menos usada, con la stat mas baja?
 Prob sea la mas reciente, pero es cierto que llevar una cola para desalojar la primera

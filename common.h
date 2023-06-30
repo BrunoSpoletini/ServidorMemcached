@@ -36,6 +36,8 @@ enum code {
 // Cierra el programa e imprime un mensaje de error
 void quit(char *s);
 
+ typedef struct Hashtable Hashtable;
+
 /* Estructura que almacena los datos de cada fd agregado a epoll */
 typedef struct _eloop_data {
 	int fd;
@@ -45,13 +47,16 @@ typedef struct _eloop_data {
 	int buffSize;
 	int einval;
 	int notPrintable;
-	int keySize;
+
+	int cont; // Se podria usar buffSize como contador para el parser binario, ya q el buff no se usa
+	int comm; //Esto se podria usar para el parser de texto tambien
 	char* key;
-	int valueSize;
+	int keySize;
 	char* value;
+	int valueSize;
+	Hashtable* hTable;
 } eloop_data;
 
- typedef struct Hashtable Hashtable;
  typedef struct DList DList;
  typedef struct DNodo DNodo;
  typedef struct Stats Stats;

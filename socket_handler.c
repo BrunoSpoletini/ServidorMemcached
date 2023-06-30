@@ -44,7 +44,7 @@ int create_epoll()
 	return epoll_fd;
 }
 
-void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr){
+void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Hashtable* hTable){
 	struct epoll_event ev;
 	int op = init ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
 	ev.events = EPOLLIN | EPOLLONESHOT;
@@ -58,9 +58,14 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr){
 			char* buffer = malloc(sizeof(char)*READ_SIZE + 1);
 			eloop->buff = buffer;
 			eloop->buffSize = 0;
+		} else {
+			eloop->cont = 0;
+			eloop->keySize = 0;
+			eloop->valueSize = 0;
 		}
 		eloop->einval = 0;
 	    eloop->notPrintable = 0;
+		eloop->hTable = hTable;
 		ev.data.ptr = eloop;
 	} else{ //Caso contrario, recuperamos los datos
 		ev.data.ptr = dataPtr;
@@ -71,8 +76,7 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr){
 		close(epoll_fd);
 		quit("Fallo al agregar cliente a epoll\n");
 	}
-	if (init)
-		write(cliente, "Cliente conectado!\n", 19);
+	if(init) printf("Cliente conectado\n"); //DEBUG
 }
 
 void agregarSocketEpoll(int sock, int epoll_fd){
@@ -88,4 +92,14 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 		close(epoll_fd);
 		quit("Fallo al agregar fd a epoll\n");
 	}
+}
+
+void desconectarCliente(eloop_data* data){
+	write(data->fd, "Cliente desconectado\n", 21);
+	if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, data->fd, NULL) == -1)
+	{
+		close(data->epfd);
+		quit("Fallo al quitar fd de epoll\n");
+	}
+	close(data->fd);
 }

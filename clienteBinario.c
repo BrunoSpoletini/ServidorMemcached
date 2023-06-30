@@ -100,7 +100,7 @@ int create_sock(char *host, char *port)
 
 int conn()
 {
-	return create_sock("localhost", "8889");
+	return create_sock("localhost", "889");
 }
 
 void writen(int fd, const void *buf, int len)
@@ -183,22 +183,22 @@ void get(const char *k)
 
 	/* Ver respuesta */
 	{
-		int cod = 0;
-		readn(fd, &cod, 1);
+		// int cod = 0;
+		// readn(fd, &cod, 1);
 
-		if (cod == ENOTFOUND) {
-			fprintf(stderr, "ENOTFOUND\n");
-			exit(1);
-		} else if (cod != OK) {
-			die("error en pedido, devolvió %i", cod);
-		}
+		// if (cod == ENOTFOUND) {
+		// 	fprintf(stderr, "ENOTFOUND\n");
+		// 	exit(1);
+		// } else if (cod != OK) {
+		// 	die("error en pedido, devolvió %i", cod);
+		// }
 
-		int len;
-		void *buf;
-		recv_var(fd, &len, &buf);
-		writen(1, buf, len);
-		free(buf);
-		fprintf(stderr, "\nOK\n");
+		// int len;
+		// void *buf;
+		// recv_var(fd, &len, &buf);
+		// writen(1, buf, len);
+		// free(buf);
+		// fprintf(stderr, "\nOK\n");
 	}
 }
 
@@ -350,6 +350,5 @@ int main(int argc, char **argv)
 		stats();
 	else
 		usage(argv[0]);
-
 	return 0;
 }
