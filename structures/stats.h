@@ -1,13 +1,16 @@
 #ifndef __STATS_H__
 #define __STATS_H__
 #include <pthread.h>
+#include <stdlib.h>
+#include "../common.h"
+#include "hash.h"
 
-typedef struct {
+struct Stats{
 
     unsigned long long puts, dels, gets,keys;
 
     pthread_mutex_t lock; /// no solo para sumar, sino que al momento de imprimir, tambien hay que usarlo.
-}Stats;
+};
 
 
 Stats *create_stats();

@@ -9,7 +9,17 @@
 #include "../common.h"
 #include "hash.h"
 
+ struct DNodo {
+  void *dato;
+  struct DNodo *ant;
+  struct DNodo *sig;
+  struct DNodo *othernode;
+} ;
 
+struct DList{
+  DNodo *primero;
+  DNodo *ultimo;
+};
 
 
 

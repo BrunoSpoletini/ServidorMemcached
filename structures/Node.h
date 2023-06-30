@@ -4,13 +4,13 @@
 #include "../common.h"
 #include "../utils.h"
 
-typedef struct {
+struct Node{
     char * key, *value;
     int lenkey, lenvalue;
     unsigned long slug; 
     int hash; /// el hash es el slug % tamaño de la tabla. Nos sirve para evitar comparaciones.
     bool printable;
-}Node;
+};
 
 
 void destroy_node(void* node);

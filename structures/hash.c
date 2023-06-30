@@ -1,4 +1,3 @@
-#include <math.h>
 #include "hash.h"
 
 Hashtable *create_table() {
@@ -155,7 +154,7 @@ int _PUT(Hashtable *ht, Node *node){
 }
 
 
-int _GET(Hashtable *ht, Node *node, char* retval){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+int _GET(Hashtable *ht, Node *node, char** retval){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
   add_get(ht->stats);
 
   int index = node->hash;
@@ -171,9 +170,10 @@ int _GET(Hashtable *ht, Node *node, char* retval){ /// podemos usar un node vaci
     return ENOTFOUND;
   }
   Node* data = elem->dato;
-  retval = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
+  
+  (*retval) = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
-  if(retval == NULL){
+  if( (*retval) == NULL){
     pthread_mutex_unlock( &ht->rlock[index] );
     return EOOM;
   }

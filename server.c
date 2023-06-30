@@ -81,8 +81,10 @@ void processReq(eloop_data* data, char** req){
 	else if (!strcmp(req[0], "GET") && req[2] == NULL)
 	{	
 		Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
-		char* res;
-		int ret = _GET(hTable, nodo, res);
+		char* res = NULL;
+	
+		int ret = _GET(hTable, nodo, &res);
+
 
 		switch ( ret )
 		{
@@ -90,10 +92,13 @@ void processReq(eloop_data* data, char** req){
 			write(data->fd, "ENOTFOUND\n", 10);
 			break;
 		case EOOM:
-			write(data->fd, "EOOM\n", 10);
+			write(data->fd, "EOOM\n", 4);
 			break;
 		default:
-			write(data->fd, res, sizeof(res));
+
+		printf("Salio todo bien: %s\n", res);
+			write(data->fd, "OK ", 3);
+			write(data->fd, res, strlen(res));
 			write(data->fd, "\n", 1);
 			break;
 		}
@@ -258,8 +263,7 @@ void *wait_for_clients(void *threadParam)
 }
 
 int main(int argc, char **argv){
-	hTable = malloc(sizeof(Hashtable));
-	inicializar_tabla(hTable);
+	hTable =  create_table();
 	pthread_t t[MAX_THREADS];
 	int textSock, binSock;
 	textSock = atoi(argv[1]);

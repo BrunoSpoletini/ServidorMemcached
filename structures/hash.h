@@ -1,24 +1,31 @@
 #ifndef __HASH_H__
 #define __HASH_H__
 
-#include "dlist.h"
-
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include "../common.h"
 #include "dlist.h"
 #include "stats.h"
 #include "Node.h"
-#include "../common.h"
 
+
+
+struct Hashtable{
+    struct DList *row[TABLESIZE];
+    pthread_mutex_t rlock[TABLESIZE];
+    struct DList *LRU;
+    pthread_mutex_t locklru;
+    struct Stats *stats;
+};
 
 
 typedef char *(*FuncionObtencion) (void *dato);
 
 // Crea una tabla hash vacia de tamaño TABLESIZE
-void inicializar_tabla(Hashtable *ht);
+Hashtable *create_table();
 
 void *tryalloc(Hashtable *ht, unsigned bytes);
 
@@ -30,7 +37,7 @@ int hash_string(char *value);
 void *tryalloc(Hashtable *ht, unsigned bytes);
 char *copycat(Hashtable *ht,char *s, int len);
 int _PUT(Hashtable *ht, Node *node);
-int _GET(Hashtable *ht, Node *node, char* retval);
+int _GET(Hashtable *ht, Node *node, char** retval);
 int _DEL(Hashtable *ht,Node *node);
 
 #endif                          /* __HASH_H__ */
