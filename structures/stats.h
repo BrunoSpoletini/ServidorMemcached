@@ -11,6 +11,8 @@ typedef struct {
 
 
 Stats *create_stats();
+Stats *snapshot_stats();
+void destroy_stats();
 void add_put(Stats *s);
 void add_del(Stats *s);
 void add_get(Stats *s);

@@ -8,10 +8,10 @@ DList *dlist_crear() {
   return lista;
 }
 
-DNodo *dlist_crear_nodo(void *dato){
-  DNodo *nuevoNodo = tryalloc( sizeof(DNodo) );
+DNodo *dlist_crear_nodo(struct Hashtable *ht,void *dato){
+  DNodo *nuevoNodo = tryalloc(ht, sizeof(DNodo) );
   
-  if(nuevonodo == NULL)
+  if(nuevoNodo == NULL)
     return NULL;
 
   nuevoNodo->dato = dato;
@@ -84,3 +84,5 @@ void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDa
   dlist_destruir_nodo(nodo,liberarDato);
 
 }
+
+

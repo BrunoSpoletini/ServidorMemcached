@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include "hash.h"
 
+
 typedef struct _DNodo {
   void *dato;
   struct _DNodo *ant;
@@ -39,7 +40,7 @@ void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDa
 
 DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare);
 
-DNodo *dlist_crear_nodo(void *dato);
+DNodo *dlist_crear_nodo(struct Hashtable *ht,void *dato);
 
 
 void dlist_deslinkear(DList * lista, DNodo * nodo);

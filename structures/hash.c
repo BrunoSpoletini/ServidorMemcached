@@ -26,19 +26,55 @@ int hash_string(char *value) {
   return (int) key;
 }
 
-void *evict(Hashtable *ht, unsigned bytes){
-  /// tenemos que liberar bytes de la ht, soltando por la politica de desalojo.
-  return NULL;
+void dummyfree(void* data){
+
+}
+
+bool evict(Hashtable *ht){
+
+  pthread_mutex_lock( &ht->locklru );
+
+  if(ht->LRU->primero == NULL ){
+    pthread_mutex_unlock( &ht->locklru );
+    return false;
+  }
+
+  DNodo* node = ht->LRU->primero;
+
+  while(node != ht->LRU->ultimo){
+
+    Node* data = (node->othernode->dato);
+
+    if( pthread_mutex_trylock( &ht->rlock[data->hash]) == 0 ){
+
+      dlist_eliminar_nodo(ht->row[data->hash], node->othernode, destroy_node);
+      dlist_eliminar_nodo(ht->LRU, node, dummyfree); /// el nodo de la LRU.
+
+
+      pthread_mutex_unlock( &ht->rlock[data->hash] );
+      pthread_mutex_unlock( &ht->locklru );
+      return true;
+    }
+
+    node = node->sig;
+  }
+
+
+  pthread_mutex_unlock( &ht->locklru );
+
+
+  return false;
 }
 
 void *tryalloc(Hashtable *ht, unsigned bytes){
 
-    void* space = malloc(bytes);
-    if(space == NULL){
-         return evict(ht,bytes);
+    void *ret;
+    while( (ret = malloc(bytes)) == NULL ){
+      if( !evict(ht) )
+        return NULL;
     }
 
-    return space;
+    return ret;
 }
 
 char *copycat(Hashtable *ht,char *s, int len){
@@ -62,6 +98,7 @@ void updateLRU(Hashtable *ht, DNodo* elem){
 }
 
 int _PUT(Hashtable *ht, Node *node){
+    add_put(ht->stats);
 
     int index = node->hash;
     pthread_mutex_lock( &ht->rlock[index] );
@@ -70,14 +107,14 @@ int _PUT(Hashtable *ht, Node *node){
 
     if(elem == NULL){ // no esta en la lista.
 
-        DNodo* newnode = dlist_crear_nodo(node); /// no copiamos el valor, lo tomamos como puntero.
+        DNodo* newnode = dlist_crear_nodo(ht,node); /// no copiamos el valor, lo tomamos como puntero.
         if(newnode == NULL){ /// si no pudimos crear el nodo:
           pthread_mutex_unlock( &ht->rlock[index] );
           destroy_node(node);
           return EOOM;
         }
 
-        DNodo* newnodeLRU = dlist_crear_nodo(NULL);
+        DNodo* newnodeLRU = dlist_crear_nodo(ht,NULL);
 
          if(newnodeLRU == NULL){ /// si no pudimos crear el nodo:
           pthread_mutex_unlock( &ht->rlock[index] );
@@ -99,6 +136,8 @@ int _PUT(Hashtable *ht, Node *node){
 
       pthread_mutex_unlock(&ht->rlock[index]);
 
+      add_key(ht->stats);
+
     }else{/// ya existe la clave:
 
         Node *trash = elem->dato;
@@ -116,7 +155,8 @@ int _PUT(Hashtable *ht, Node *node){
 }
 
 
-void* _GET(Hashtable *ht, Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+int _GET(Hashtable *ht, Node *node, char* retval){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+  add_get(ht->stats);
 
   int index = node->hash;
 
@@ -127,13 +167,13 @@ void* _GET(Hashtable *ht, Node *node){ /// podemos usar un node vacio, que solo 
   //destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
 
   if(elem == NULL)
-    return NULL;//(void*)ENOTFOUND; DEBUG
+    return ENOTFOUND;//(void*)ENOTFOUND; DEBUG
 
   Node* data = elem->dato;
-  char* retval = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
+  retval = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
   if(retval == NULL)
-    return NULL;//(void*)EOOM;
+    return EOOM;//(void*)EOOM;
 
   updateLRU(ht,elem->othernode);
 
@@ -141,12 +181,14 @@ void* _GET(Hashtable *ht, Node *node){ /// podemos usar un node vacio, que solo 
 
   destroy_node(node); // fuera de la zona critica.
 
-  return retval;
+  return OK;
 }
 
 
 
+
 int _DEL(Hashtable *ht,Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+  add_del(ht->stats);
 
   int index = node->hash;
 
@@ -159,12 +201,14 @@ int _DEL(Hashtable *ht,Node *node){ /// podemos usar un node vacio, que solo con
     return ENOTFOUND;
 
   
-  dlist_eliminar_nodo(ht->LRU, elem->othernode, free); /// el nodo de la LRU.
+  dlist_eliminar_nodo(ht->LRU, elem->othernode, dummyfree); /// el nodo de la LRU.
   dlist_eliminar_nodo(ht->row[index], elem, destroy_node);
 
   pthread_mutex_unlock(&ht->rlock[index]);
 
   destroy_node(node); // fuera de la zona critica.
+
+  del_key(ht->stats);
 
   return OK;
 }

@@ -13,7 +13,7 @@ static inline void declLock(int *p) {
 */
 
 Stats *create_stats(){
-    Stats *newstats = malloc(sizeof(Stats)); /// esto se crea en el mismo momento que la tabla, asi que usamos malloc, y no tryalloc.
+    Stats *newstats = tryalloc( sizeof(Stats) ); /// esto se crea en el mismo momento que la tabla, asi que usamos malloc, y no tryalloc.
     newstats->puts = 0;
     newstats->dels = 0;
     newstats->gets = 0;
@@ -50,4 +50,19 @@ void del_key(Stats *s){
     pthread_mutex_lock(&s->lock);
     s->keys--;
     pthread_mutex_unlock(&s->lock);
+}
+
+Stats *snapshot_stats(Stats* s){
+    Stats *snapshot = create_stats();
+    pthread_mutex_lock(&s->lock);
+    snapshot->dels = s->gets;
+    snapshot->puts = s->gets;
+    snapshot->gets = s->gets;
+    snapshot->keys = s->gets;
+    pthread_mutex_unlock(&s->lock);
+    return snapshot;
+}
+
+void destroy_stats(Stats* s){
+    free(s);
 }
