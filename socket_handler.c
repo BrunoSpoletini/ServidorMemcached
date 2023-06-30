@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include "common.h"
+#include "socket_handler.h"
 
 int lsock_tcp(int port)
 {
@@ -50,12 +51,12 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Has
 	ev.events = EPOLLIN | EPOLLONESHOT;
 
 	if(init){ //Si es el primer registro, cargamos la estructura
-		eloop_data *eloop = malloc(sizeof(eloop_data));
+		eloop_data *eloop = tryalloc(hTable, sizeof(eloop_data));
 		eloop->fd = cliente;
 		eloop->epfd = epoll_fd;
 		eloop->isText = (init==1);
 		if ( eloop->isText ) {
-			char* buffer = malloc(sizeof(char)*READ_SIZE + 1);
+			char* buffer = tryalloc(hTable,(sizeof(char)*READ_SIZE + 1) );
 			eloop->buff = buffer;
 			eloop->buffSize = 0;
 		} else {
@@ -76,7 +77,7 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Has
 		close(epoll_fd);
 		quit("Fallo al agregar cliente a epoll\n");
 	}
-	if(init) printf("Cliente conectado\n"); //DEBUG
+	if(init) printf("Cliente conectado con fd = %d\n",cliente); //DEBUG
 }
 
 void agregarSocketEpoll(int sock, int epoll_fd){
@@ -95,11 +96,15 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 }
 
 void desconectarCliente(eloop_data* data){
-	write(data->fd, "Cliente desconectado\n", 21);
+	/*write(data->fd, "Cliente desconectado\n", 21);
 	if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, data->fd, NULL) == -1)
 	{
 		close(data->epfd);
 		quit("Fallo al quitar fd de epoll\n");
 	}
+	*/
+	/// no hace falta sacarlo del epoll porque ya consumimos su peticion?
+	// habria que free() al buffer y a la estructura.
+	printf("aca corresponde sacar el cliente de fd = %d\n",data->fd);
 	close(data->fd);
 }

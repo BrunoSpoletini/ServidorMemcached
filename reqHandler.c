@@ -22,13 +22,13 @@ void processReq(eloop_data* data, char** req){
 	
 	if (!strcmp(req[0], "PUT"))
 	{
-		Node* nodo = create_node_from_KV(req[1], strlen(req[1]), req[2], strlen(req[2]));
+		Node* nodo = create_node_from_KV(data->hTable, req[1], strlen(req[1]), req[2], strlen(req[2]));
 		_PUT(data->hTable, nodo);
 		write(data->fd, "OK\n", 4);
 	}
 	else if (!strcmp(req[0], "DEL") && req[2] == NULL)
 	{
-		Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
+		Node* nodo = create_node_from_K(data->hTable,req[1], strlen(req[1])); 
 
 		int res = _DEL(data->hTable, nodo);
 
@@ -41,7 +41,7 @@ void processReq(eloop_data* data, char** req){
 	}
 	else if (!strcmp(req[0], "GET") && req[2] == NULL)
 	{	
-		Node* nodo = create_node_from_K(req[1], strlen(req[1])); 
+		Node* nodo = create_node_from_K(data->hTable,req[1], strlen(req[1])); 
 		char* res = NULL;
 	
 		int ret = _GET(data->hTable, nodo, &res);
@@ -92,7 +92,7 @@ int parseLineText(eloop_data* data, char* buff, char** req){
 	for (int i = 0; token != NULL && words <= 3; i++)
 	{
 		words++;
-		req[i] = malloc(sizeof(char)*(strlen(token) + 1));
+		req[i] = tryalloc( data->hTable ,sizeof(char)*(strlen(token) + 1));
 		if (req[i] == NULL)
 			quit("Fallo malloc");
 		
@@ -131,9 +131,17 @@ int fd_readline_texto(eloop_data* data)
 				} else if ( data->notPrintable == 1) {
 					write(data->fd, "Comando invalido - Caracteres no imprimible\n", 44);
 				} else {
-					char **req = malloc(sizeof(char*) * 3);
+					char **req = tryalloc(data->hTable,sizeof(char*) * 3);
 					//printf("Lo que se le pasa al parser: -%s-\n", buffer+linea);
 					ret =  conectado ? parseLineText(data, buffer + linea, req) : -2;
+
+					printf("entendemos el comando:\n");
+					for(int p = 0; p < 3; p++){
+						if( req[p] != NULL)
+							printf("%s ",req[p]);
+					}
+					printf("\n");
+
 					if ( ret == -1 ){
 						write(data->fd, "Comando invalido\n", 17);
 					} else if ( ret == -2){ //Se desconecta el cliente

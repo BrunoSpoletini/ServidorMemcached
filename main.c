@@ -55,13 +55,12 @@ bool std_down_privileges(){
 	if (getuid() != 0)
 		return true;
 
-
 	char *s =getenv("SUDO_UID"); /// usuario que llamo con sudo.
 
-	if ( (setuid( atoi(s) ) == -1) )
+	if( setuid( atoi(s) ) == -1 )
 		return false;
 
-	if (getuid() != 0)
+	if( getuid() != 0)
 		return true;
 	
     return false;

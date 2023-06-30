@@ -10,7 +10,7 @@
 #include "hash.h"
 
  struct DNodo {
-  void *dato;
+  Node *dato;
   struct DNodo *ant;
   struct DNodo *sig;
   struct DNodo *othernode;
@@ -42,7 +42,7 @@ void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDa
 
 DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare);
 
-DNodo *dlist_crear_nodo(Hashtable *ht,void *dato);
+DNodo *dlist_crear_nodo(Hashtable *ht , Node* dato);
 
 
 void dlist_deslinkear(DList * lista, DNodo * nodo);

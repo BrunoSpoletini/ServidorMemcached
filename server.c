@@ -68,7 +68,9 @@ void *wait_for_clients(void *threadParam)
 	struct epoll_event events[MAX_EVENTS];
 	while (1)
 	{
-		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, TIMEOUT);
+		printf("soy un thread esperando data\n");
+		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+		printf("soy un thread que paso\n");
 		for (int i = 0; i < events_count; i++){
 			data = ((eloop_data*)events[i].data.ptr);
 			event_fd = data->fd;

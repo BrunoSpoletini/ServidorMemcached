@@ -46,6 +46,8 @@ bool evict(Hashtable *ht){
 
     if( pthread_mutex_trylock( &ht->rlock[data->hash]) == 0 ){
 
+      printf("EVICT: eliminamos el nodo con key = %s, valor = %s\n",data->key,data->value);
+
       dlist_eliminar_nodo(ht->row[data->hash], node->othernode, destroy_node);
       dlist_eliminar_nodo(ht->LRU, node, dummyfree); /// el nodo de la LRU.
 
@@ -69,8 +71,11 @@ void *tryalloc(Hashtable *ht, unsigned bytes){
 
     void *ret;
     while( (ret = malloc(bytes)) == NULL ){
-      if( !evict(ht) )
+    printf("\n\n\nLLAMADA A EVICT\n\n\nLLAMADA A EVICT\n\n\n");
+      if( !evict(ht) ){
+        printf("DEVOLVIMOS NULL A ALGUIEN. SE ROMPE TODO!!!! (se deberia devolver EOOM)\n");
         return NULL;
+      }
     }
 
     return ret;
@@ -100,6 +105,7 @@ int _PUT(Hashtable *ht, Node *node){
     add_put(ht->stats);
 
     int index = node->hash;
+
     pthread_mutex_lock( &ht->rlock[index] );
 
     DNodo* elem = dlist_buscar_nodo(ht->row[index], node, equal_keys);
@@ -139,14 +145,14 @@ int _PUT(Hashtable *ht, Node *node){
 
     }else{/// ya existe la clave:
 
-        Node *trash = elem->dato;
+
+        destroy_node(elem->dato); /// fuera de la zona critica.
+        //Node *trash = elem->dato;
         elem->dato = node;
-        
-        updateLRU(ht,elem);
+        updateLRU(ht,elem->othernode);
 
       pthread_mutex_unlock(&ht->rlock[index]);
 
-      destroy_node(trash); /// fuera de la zona critica.
 
     }
 

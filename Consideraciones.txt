@@ -79,4 +79,43 @@ Funcionalidades faltantes de la tabla hash:
 - funcion de EVICT (desalojo)
 
 
+usar tryalloc en vez de malloc, en todos lados
+hacer free de todas las cosas que llamen a tryalloc, como char** req por ejemplo
+chequear que el manejo de errores sea correcto, en todos lados.(los tryalloc pueden devolver NULL, y los create_node tambien).
+en el reqHandler, se podria simplificar el codigo de imrpimir las respuestas con code_str?
+tipo if OK:
+		write(" ok v")
+	else
+		write(code_str(var), strlen(code_str(var)));
+
+Los stats funcionan de la siguiente manera:
+
+Stats* snapshot;
+int ret = snapshot_stats(ht, snapshot);
+y en snapshot quedan las variables guardadas,
+despues eliminar snapshot con:
+destroy_stats(snapshot);
+
+
+La funcion hash:
+int hash_string(char *value) {
+  unsigned long long int key = 0;
+  for (int i = 0; value[i] != '\0'; i++) {
+    key += value[i] * pow(2, (i % 10));
+  }
+  key = key % TABLESIZE;
+  return (int) key;
+}
+- deberia devolver un unsigned long.
+- no deberia tener el % tablesize.
+- usa pow() que se podria hacer mas eficiente.
+- habria que de alguna manera chequear que no sea posible que devuelva valores negativos.
+
+
+la flag de printable se podria pasar como parametro cuando creas el nodo.
+
+Si no tenemos suficiente memoria como para alojar una nueva conexion (tryalloc(epoll_data) da NULL), entonces por 
+politica de mejor esfuerzo, en vez de hacer un quit, podriamos dejar pasar esa conexion.
+
+
 

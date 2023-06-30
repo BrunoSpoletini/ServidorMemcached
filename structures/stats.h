@@ -14,7 +14,7 @@ struct Stats{
 
 
 Stats *create_stats();
-Stats *snapshot_stats();
+int snapshot_stats(Hashtable *ht, Stats* snapshot);
 void destroy_stats();
 void add_put(Stats *s);
 void add_del(Stats *s);

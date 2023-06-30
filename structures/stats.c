@@ -13,6 +13,8 @@ static inline void declLock(int *p) {
 
 Stats *create_stats(Hashtable *ht){
     Stats *newstats = tryalloc(ht, sizeof(Stats) ); /// esto se crea en el mismo momento que la tabla, asi que usamos malloc, y no tryalloc.
+    if(newstats == NULL)
+        return NULL;
     newstats->puts = 0;
     newstats->dels = 0;
     newstats->gets = 0;
@@ -51,8 +53,7 @@ void del_key(Stats *s){
     pthread_mutex_unlock(&s->lock);
 }
 
-Stats *snapshot_stats(Hashtable *ht){
-    Stats *snapshot = create_stats(ht);
+int snapshot_stats(Hashtable *ht, Stats* snapshot){
     Stats *s = ht->stats;
     pthread_mutex_lock(&s->lock);
     snapshot->dels = s->gets;
@@ -60,7 +61,7 @@ Stats *snapshot_stats(Hashtable *ht){
     snapshot->gets = s->gets;
     snapshot->keys = s->gets;
     pthread_mutex_unlock(&s->lock);
-    return snapshot;
+    return OK;
 }
 
 void destroy_stats(Stats* s){

@@ -8,7 +8,7 @@ DList *dlist_crear() {
   return lista;
 }
 
-DNodo *dlist_crear_nodo(Hashtable *ht,void *dato){
+DNodo *dlist_crear_nodo(Hashtable *ht , Node* dato){
   DNodo *nuevoNodo = tryalloc(ht, sizeof(DNodo) );
   
   if(nuevoNodo == NULL)
@@ -54,6 +54,7 @@ DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
   while(aux != NULL){
     if( compare(aux->dato, nodo) )
         return aux;
+      aux = aux->sig;
   }
   return NULL;
 }
