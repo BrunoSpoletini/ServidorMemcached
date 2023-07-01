@@ -37,7 +37,7 @@ int hash_string(char *value);
 void *tryalloc(Hashtable *ht, unsigned bytes);
 char *copycat(Hashtable *ht,char *s, int len);
 int _PUT(Hashtable *ht, Node *node);
-int _GET(Hashtable *ht, Node *node, char** retval, int* size);
+int _GET(Hashtable *ht, Node *node, char** retval, int *size, bool *printable);
 int _DEL(Hashtable *ht,Node *node);
 
 #endif                          /* __HASH_H__ */

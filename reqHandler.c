@@ -18,12 +18,16 @@ void handleConn(eloop_data* data)
 	} 
 }
 
-void writeSock(eloop_data* data, int resp){
+void writeSock(eloop_data* data, int resp, bool endline){
 	if ( data->isText ){
 		char val[15];
 		strcpy(val, code_str(resp));
 		write(data->fd, val, strlen(val));
-		write(data->fd, "\n", 1);
+		if(endline){
+			write(data->fd, "\n", 1);
+		}else{
+			write(data->fd, " ", 1);
+		}
 	} else {
 		int val = resp;
 		write(data->fd, &val, 1);
@@ -39,26 +43,48 @@ void processReq(eloop_data* data, char** req){
 	{
 		Node* nodo = create_node_from_KV(data->hTable, req[0], strlen(req[0]), req[1], strlen(req[1]));
 		_PUT(data->hTable, nodo);
-		writeSock(data, OK);
+		writeSock(data, OK, true);
 	}
 	else if (( data->comm == DEL ) && req[1] == NULL)
 	{
 		Node* nodo = create_node_from_K(data->hTable,req[0], strlen(req[0])); 
 
 		int res = _DEL(data->hTable, nodo);
-		writeSock(data, res);
+		writeSock(data, res, true);
 	}
 	else if (( data->comm == GET ) && req[1] == NULL)
 	{	
 		Node* nodo = create_node_from_K(data->hTable,req[0], strlen(req[0])); 
 		char* res = NULL;
-		int ret = _GET(data->hTable, nodo, &res, &size);
+		int size;
+		bool printable;
+		int ret = _GET(data->hTable, nodo, &res, &size, &printable);
 
-		writeSock(data, ret);
+		if(ret == OK){
 
+			if(size > 2045){ /// por el OK 
+				writeSock(data, EBIG, true);
+				goto done;
+			}
+			
+			if(!printable){
+				writeSock(data, EBINARY, true);
+				goto done;
+			}
+
+			writeSock(data, ret, false);
+			write(data->fd, res, size);
+			write(data->fd, "\n", 1);
+
+		}else{
+			writeSock(data, ret, true);
+		}
+		done:
+
+		/*
 		if ( ret == OK ){
 			if ( data->isText ){ //DEBUG - aca hay que agregar si es imprimible
-				write(data->fd, res, strlen(res));
+				write(data->fd, res, size);
 				write(data->fd, "\n", 1);
 			} else {
 				// TO DO - Creo que hay que cambiar los size en todos lados por int32_t, pq 
@@ -69,6 +95,8 @@ void processReq(eloop_data* data, char** req){
 				// write( data->fd, res, data->valueSize);
 			}
 		}
+		*/
+
 
 	} else if (( data->comm == STATS ) && req[0] == NULL){
 		printf("Stat\n");
