@@ -160,7 +160,7 @@ int _PUT(Hashtable *ht, Node *node){
 }
 
 
-int _GET(Hashtable *ht, Node *node, char** retval){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+int _GET(Hashtable *ht, Node *node, char** retval, int *size){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
   add_get(ht->stats);
 
   int index = node->hash;
@@ -177,6 +177,7 @@ int _GET(Hashtable *ht, Node *node, char** retval){ /// podemos usar un node vac
   }
   Node* data = elem->dato;
   
+  (*size) = data->lenvalue;
   (*retval) = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
   if( (*retval) == NULL){

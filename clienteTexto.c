@@ -131,8 +131,6 @@ int main()
 		printf("%s\n", buffer);
 		*/
 
-
-
 		int rc = 0;
 		sprintf(buffer2,"PUT C%d %d\nAWDS\nGET C%d\nPUT clave val\n", i+430, i+430,i+430);
 		cto = strlen(buffer2);

@@ -30,3 +30,14 @@ void quit(char *s){
 	abort();
 }
 
+int str_to_comm(char *str){
+	if (strcmp(str, "PUT") == 0)
+		return PUT;
+	if (strcmp(str, "GET") == 0)
+		return GET;
+	if (strcmp(str, "DEL") == 0)
+		return DEL;
+	if (strcmp(str, "STATS") == 0)
+		return STATS;
+	return -1;
+}
