@@ -37,16 +37,10 @@ void writeSock(eloop_data* data, int resp, bool endline){
 
 void processReq(eloop_data* data, char** req){
 	
-	printf("\n%d-%s-%s-\n", data->comm, req[0], req[1]);
-	
-	if ( data->comm == PUT && req[2] == NULL)
-	{	
-		Node* nodo;
-		nodo = create_node_from_KV(data->hTable, req[0], data->keySize, req[1], data->valueSize);
-		
-		_PUT(data->hTable, nodo);
-		writeSock(data, OK, true);
-	}
+ 	if (( data->comm == STATS ) && req[0] == NULL){
+		printf("Stat\n");
+		//do stuff
+	} 
 	else if (( data->comm == DEL ) && req[1] == NULL)
 	{
 		Node* nodo = create_node_from_K(data->hTable,req[0], data->keySize); 
@@ -64,7 +58,6 @@ void processReq(eloop_data* data, char** req){
 		int ret = _GET(data->hTable, nodo, &res, &size, &printable);
 
 		if(ret == OK){
-
 			if ( data->isText ){
 				if( size > 2045 ){ /// por el OK 
 					writeSock(data, EBIG, true);
@@ -85,28 +78,15 @@ void processReq(eloop_data* data, char** req){
 		} else {
 			writeSock(data, ret, true);
 		}
-
-
-		/*
-		if ( ret == OK ){
-			if ( data->isText ){ //DEBUG - aca hay que agregar si es imprimible
-				write(data->fd, res, size);
-				write(data->fd, "\n", 1);
-			} else {
-				// TO DO - Creo que hay que cambiar los size en todos lados por int32_t, pq 
-				// los de texto entran, pero los de binario no.
-				int val = htonl(size);
-				write( data->fd, &val, 4 );
-				write( data->fd, res, val);
-			}
-		}
-		*/
-
-
-	} else if (( data->comm == STATS ) && req[0] == NULL){
-		printf("Stat\n");
-		//do stuff
-	} 
+	}
+	else if ( data->comm == PUT && req[2] == NULL)
+	{
+		Node* nodo;
+		nodo = create_node_from_KV(data->hTable, req[0], data->keySize, req[1], data->valueSize);
+		
+		_PUT(data->hTable, nodo);
+		writeSock(data, OK, true);
+	}
 }
 
 int validateReq(eloop_data* data, int words){
@@ -220,46 +200,53 @@ int fd_readline_texto(eloop_data* data)
 	return rc;
 }
 
+void cleanEloop( eloop_data* data){
+	data->cont = 0;
+	data->keySize = 0;
+	data->valueSize = 0;
+}
+
 void parseBin(eloop_data* data){
 	char* req[2];
+	printf("- %s - %d - %s - %d-\n", data->key, data->keySize, data->value, data->valueSize);
 	switch (data->comm)
 	{
 	case 11: //PUT
-		//if ( data->cont == data->keySize + data->valueSize + 9 ){
+		if ( data->cont == data->keySize + data->valueSize + 9 ){
 			req[0] = data->key;
 			req[1] = data->value;
 			req[2] = NULL;
 			processReq(data, req);
-		//}
+			cleanEloop(data);
+		}
 		break;
 	case 12: //DEL
-		//if ( data->cont == data->keySize + 5 ){
+		if ( data->cont == data->keySize + 5 ){
 			req[0] = data->key;
 			req[1] = NULL;
 			processReq(data, req);
-		//}
+			cleanEloop(data);
+		}
 		break;
 	case 13: //GET
-		//if ( data->cont == data->keySize + 5 ){
+		if ( data->cont == data->keySize + 5 ){
 			req[0] = data->key;
 			req[1] = NULL;
 			processReq(data, req);
-		//}
+			cleanEloop(data); 
+		}
 		break;
 	case 21: //STATS
-		//if ( data->cont == 1 ){
+		if ( data->cont == 1 ){
 			req[0] = NULL;
 			processReq(data, req);
-		//}
+			cleanEloop(data);
+		}
 		break;
 	default:
-		printf("ParseBin...raro\n"); //DEBUG
-		//processReq(data,req);
+		quit("Comando invalido"); //DEBUG - Decidir que hacer si nos llegan comandos binarios invalidos
 		break;
 	}
-	data->cont = 0;
-	data->keySize = 0;
-	data->valueSize = 0;
 }
 
 /* Handler binario */
@@ -321,7 +308,6 @@ int fd_readline_bin(eloop_data* data){
 			case 0: // Leer el comando
 				data->comm = buffL[i];
 				printf("[0]");
-				
 				break;
 			case 1: // Leer keySize 
 				printf("[1]");
@@ -340,13 +326,17 @@ int fd_readline_bin(eloop_data* data){
 				data->value[data->cont - data->keySize - 9] = buffL[i];
 				break;
 			default:
-				//parseBin(data);
 				quit("Error en el parser binario\n");
 				break;
 			}
 			data->cont++;
+
+			if (i == (rc-1)) {
+				parseBin(data);
+			}
 		}
-		parseBin(data); // Analizar si esto esta bien
+
+		
 	}
 	
 	return rc; //En teoria si rc == 0, el handle_conection desconecta al cliente
