@@ -83,7 +83,12 @@ void *wait_for_clients(void *threadParam)
 				}
 			} else {
 				printf("EPOLL\n");
-				handleConn(data);
+				//if ( isSocketUp(event_fd) ){
+					handleConn(data);
+				//} else {
+				//	printf("DESCONECTADO LINCE\n");
+				//	desconectarCliente(data);
+				//}
 			}
 		}
 	}
