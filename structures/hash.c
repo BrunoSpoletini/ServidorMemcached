@@ -16,9 +16,9 @@ Hashtable *create_table() {
   return ht;
 }
 
-int hash_string(char *value) {
+int hash_string(char *value, int size) {
   unsigned long long int key = 0;
-  for (int i = 0; value[i] != '\0'; i++) {
+  for (int i = 0; i < size; i++) {
     key += value[i] * pow(2, (i % 10));
   }
   key = key % TABLESIZE;

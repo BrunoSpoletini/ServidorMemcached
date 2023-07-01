@@ -42,25 +42,22 @@ void processReq(eloop_data* data, char** req){
 	if ( data->comm == PUT && req[2] == NULL)
 	{	
 		Node* nodo;
-		if (data->isText){
-			nodo = create_node_from_KV(data->hTable, req[0], strlen(req[0]), req[1], strlen(req[1]));//Podemos guardar los strlen en keysize y valuesize asi es mas homogeneo - DEBUG
-		} else {
-			nodo = create_node_from_KV(data->hTable, req[0], data->keySize, req[1], data->valueSize);
-		}
-
+		nodo = create_node_from_KV(data->hTable, req[0], data->keySize, req[1], data->valueSize);
+		
 		_PUT(data->hTable, nodo);
 		writeSock(data, OK, true);
 	}
 	else if (( data->comm == DEL ) && req[1] == NULL)
 	{
-		Node* nodo = create_node_from_K(data->hTable,req[0], strlen(req[0])); 
+		Node* nodo = create_node_from_K(data->hTable,req[0], data->keySize); 
 
 		int res = _DEL(data->hTable, nodo);
 		writeSock(data, res, true);
 	}
 	else if (( data->comm == GET ) && req[1] == NULL)
 	{
-		Node* nodo = create_node_from_K(data->hTable,req[0], strlen(req[0])); 
+		printf("LARGO STRLEN: %d\n ", data->keySize);
+		Node* nodo = create_node_from_K(data->hTable,req[0], data->keySize); 
 		char* res = NULL;
 		int size;
 		bool printable;
@@ -68,24 +65,27 @@ void processReq(eloop_data* data, char** req){
 
 		if(ret == OK){
 
-			if(size > 2045){ /// por el OK 
-				writeSock(data, EBIG, true);
-				goto done;
-			}
-			
-			if(!printable){
-				writeSock(data, EBINARY, true);
-				goto done;
+			if ( data->isText ){
+				if( size > 2045 ){ /// por el OK 
+					writeSock(data, EBIG, true);
+				} else if( !printable ){
+					writeSock(data, EBINARY, true);
+				} else {
+					writeSock(data, ret, false);
+					write(data->fd, res, size);
+					write(data->fd, "\n", 1);
+				}
+			} else {
+				writeSock(data, ret, false);
+				int val = htonl(size);
+				write( data->fd, &val, 4 );
+				write(data->fd, res, size);
 			}
 
-			writeSock(data, ret, false);
-			write(data->fd, res, size);
-			write(data->fd, "\n", 1);
-
-		}else{
+		} else {
 			writeSock(data, ret, true);
 		}
-		done:
+
 
 		/*
 		if ( ret == OK ){
@@ -138,6 +138,12 @@ int parseLineText(eloop_data* data, char* buff, char** req){
 				quit("Fallo malloc");
 			strcpy(req[i-1], token);
 			req[i-1][strlen(token) + 1] = '\0';
+			if ( i == 1) {
+				data->keySize = strlen(req[i-1]);
+			} 
+			if ( i == 2) {
+				data->valueSize = strlen(req[i-1]);
+			}
 		}
 		req[i] = NULL;
 		token = strtok(NULL, " \n");
@@ -248,7 +254,7 @@ void parseBin(eloop_data* data){
 		break;
 	default:
 		printf("ParseBin...raro\n"); //DEBUG
-		processReq(data,req);
+		//processReq(data,req);
 		break;
 	}
 	data->cont = 0;
@@ -259,7 +265,7 @@ void parseBin(eloop_data* data){
 /* Handler binario */
 int etapaBin( eloop_data* data ){
 	int val = data->cont;
-
+printf("\nAAAAAAAAA - data->cont: %d, y deberia ser: %d AAAAAA", data->cont, (9 + data->keySize + data->valueSize));
 	if ( val < 1) // Comando
 		return 0;
 
@@ -306,7 +312,6 @@ int etapaBin( eloop_data* data ){
 int fd_readline_bin(eloop_data* data){
 	char buffL[READ_SIZE+1];
 	int rc = 0;
-	printf("esperando para leer\n");
 	rc = read(data->fd, buffL, READ_SIZE);
 	printf("saliendo de leer, RC = %d\n", rc);
 	if (rc > 0){
@@ -341,7 +346,7 @@ int fd_readline_bin(eloop_data* data){
 			}
 			data->cont++;
 		}
-		parseBin(data);
+		parseBin(data); // Analizar si esto esta bien
 	}
 	
 	return rc; //En teoria si rc == 0, el handle_conection desconecta al cliente

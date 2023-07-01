@@ -97,8 +97,8 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 
 void desconectarCliente(eloop_data* data){
 
-	/*write(data->fd, "Cliente desconectado\n", 21);
-
+	write(data->fd, "Cliente desconectado\n", 21);
+	/*
 	if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, data->fd, NULL) == -1)
 	{
 		close(data->epfd);

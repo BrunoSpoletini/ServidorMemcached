@@ -182,7 +182,7 @@ void get(const char *k)
 	}
 
 	/* Ver respuesta */
-	{	printf("\nRESPUESTA:\n");
+	{
 		int cod = 0;
 		readn(fd, &cod, 1);
 
@@ -192,7 +192,6 @@ void get(const char *k)
 		} else if (cod != OK) {
 			die("error en pedido, devolvió %i", cod);
 		}
-
 		int len;
 		void *buf;
 		recv_var(fd, &len, &buf);
@@ -216,7 +215,7 @@ void del(const char *k)
 	}
 
 	/* Ver respuesta */
-	{	printf("\nRESPUESTA:\n");
+	{
 		int cod = 0;
 		read(fd, &cod, 1);
 
@@ -226,7 +225,7 @@ void del(const char *k)
 		} else if (cod != OK)
 			die("error en pedido, devolvió %i", cod);
 
-		fprintf(stderr, "\nOK\n");
+		fprintf(stderr, "OK\n");
 	}
 }
 
@@ -262,26 +261,36 @@ void put(const char *k)
 
 	/* Pedir */
 	{ 
+		if (1){ // Forma en la que vino el cliente binario (debemos tener algun problema para manejar el terminador)
 		int comm = PUT;
 		writen(fd, &comm, 1);
 		send_var(fd, strlen(k), k);
 		send_var(fd, strlen(k), k);
-		//int len;
-		//char *buf = input(&len);
-		//send_var(fd, len, buf);
-		//free(buf);
+		} else { //Forma en la anda el cliente binario
+			int comm = PUT;
+			writen(fd, &comm, 1);
+			send_var(fd, strlen(k), k);
+			int len;//
+
+
+			char buf[100] = {'h','o','l','a'};
+
+			//char *buf = input(&len);//
+			send_var(fd, 3, buf);//
+			//free(buf);//
+		}
+
+
 	}
 
 	/* Ver respuesta */
 	{	
-		printf("\nRESPUESTA:\n");
 		int cod = 0;
 		readn(fd, &cod, 1);
-
 		if (cod != OK)
 			die("error en pedido, devolvió %i", cod);
 
-		fprintf(stderr, "\nOK\n");
+		fprintf(stderr, "OK\n");
 	}
 }
 
@@ -296,7 +305,7 @@ void stats()
 		writen(fd, &comm, 1);
 	}
 	/* Ver respuesta */
-	{	printf("\nRESPUESTA:\n");
+	{
 		int cod = 0;
 		readn(fd, &cod, 1);
 
