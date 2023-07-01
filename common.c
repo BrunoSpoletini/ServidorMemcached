@@ -41,3 +41,17 @@ int str_to_comm(char *str){
 		return STATS;
 	return -1;
 }
+
+int char_arr_cmp(char* str1, char* str2, int l){
+	for( int i = 0; i < l; i++ ){ 
+		if (str1[i] < str2[i])
+			return -1;
+	}
+	return 0;
+}
+
+void char_arr_cpy(char* str1, char* str2, int l){
+	for( int i = 0; i < l; i++ ){ 
+		str1[i] = str2[i];
+	}
+}

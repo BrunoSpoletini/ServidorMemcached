@@ -47,6 +47,6 @@ bool equal_keys(void *na, void *nb){
     bool samelen = (a->lenkey == b->lenkey);
     bool sameslug = (a->slug == b->slug);
     if(samelen && sameslug)
-        return ( strcmp(a->key, b->key) == 0);
+        return ( char_arr_cmp(a->key, b->key, a->lenkey) == 0);
     return false;
 }

@@ -261,7 +261,7 @@ void put(const char *k)
 
 	/* Pedir */
 	{ 
-		if (1){ // Forma en la que vino el cliente binario (debemos tener algun problema para manejar el terminador)
+		if (0){ // Forma en la que vino el cliente binario (debemos tener algun problema para manejar el terminador)
 		int comm = PUT;
 		writen(fd, &comm, 1);
 		send_var(fd, strlen(k), k);
@@ -272,12 +272,10 @@ void put(const char *k)
 			send_var(fd, strlen(k), k);
 			int len;//
 
-
-			char buf[100] = {'h','o','l','a'};
-
-			//char *buf = input(&len);//
-			send_var(fd, 3, buf);//
-			//free(buf);//
+			// Apretar CTRL + D para hacer que read devuelva 0
+			char *buf = input(&len);//
+			send_var(fd, len, buf);//
+			free(buf);//
 		}
 
 
@@ -290,7 +288,7 @@ void put(const char *k)
 		if (cod != OK)
 			die("error en pedido, devolvió %i", cod);
 
-		fprintf(stderr, "OK\n");
+		fprintf(stderr, "\nOK\n");
 	}
 }
 

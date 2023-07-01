@@ -42,6 +42,12 @@ int str_to_comm(char* str);
 // Convierte un comando a su respectiva string
 const char *code_str(enum code e);
 
+// Compara dos arrays de caracteres del mismo largo
+int char_arr_cmp(char* str1, char* str2, int l);
+
+// Compara dos arrays de caracteres del mismo largo
+void char_arr_cpy(char* str1, char* str2, int l);
+
  typedef struct Hashtable Hashtable;
 
 /* Estructura que almacena los datos de cada fd agregado a epoll */

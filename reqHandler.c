@@ -335,8 +335,6 @@ int fd_readline_bin(eloop_data* data){
 				parseBin(data);
 			}
 		}
-
-		
 	}
 	
 	return rc; //En teoria si rc == 0, el handle_conection desconecta al cliente

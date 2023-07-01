@@ -86,7 +86,7 @@ char *copycat(Hashtable *ht,char *s, int len){
   if(c == NULL){
     return NULL;
   }
-  strcpy(c,s);
+  char_arr_cpy(c, s, len);
   return c;
 }
 
@@ -181,7 +181,9 @@ int _GET(Hashtable *ht, Node *node, char** retval, int *size, bool *printable){ 
 
   (*printable) = data->printable;
   (*size) = data->lenvalue;
-  printf("Size del valor en el get:%d - %d\n", data->lenvalue, (*size));
+
+  //printf("Size del valor en el get:%d - %d\n", data->lenvalue, (*size));DEBUG
+
   (*retval) = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
   if( (*retval) == NULL){
