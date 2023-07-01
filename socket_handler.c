@@ -96,7 +96,9 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 }
 
 void desconectarCliente(eloop_data* data){
+
 	/*write(data->fd, "Cliente desconectado\n", 21);
+
 	if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, data->fd, NULL) == -1)
 	{
 		close(data->epfd);
@@ -107,4 +109,12 @@ void desconectarCliente(eloop_data* data){
 	// habria que free() al buffer y a la estructura.
 	printf("aca corresponde sacar el cliente de fd = %d\n",data->fd);
 	close(data->fd);
+}
+
+int isSocketUp(int socket_fd){
+	int error = 0;
+	socklen_t len = sizeof (error);
+	int retval = getsockopt (socket_fd, SOL_SOCKET, SO_ERROR, &error, &len);
+
+	return (retval==0) && (error==0);
 }

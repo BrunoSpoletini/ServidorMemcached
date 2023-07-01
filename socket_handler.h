@@ -22,4 +22,6 @@ int create_epoll();
 /* Elimina un socket de la instancia de epoll */
 void desconectarCliente(eloop_data* data);
 
+/* Checkea si el socket esta abierto */
+int isSocketUp(int socket_fd);
 #endif
