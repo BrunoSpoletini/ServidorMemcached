@@ -113,9 +113,10 @@ int parseLineText(eloop_data* data, char* buff, char** req){
 		if ( i == 0 ){
 			data->comm = str_to_comm(token);
 		} else {
-			req[i-1] = malloc(sizeof(char)*(strlen(token) + 1));
+			req[i-1] = tryalloc(data->hTable, sizeof(char)*(strlen(token) + 1));
 			if (req[i-1] == NULL)
-				quit("Fallo malloc");
+				return -1;//desconectamos el cliente, quit("Fallo malloc");
+				
 			strcpy(req[i-1], token);
 			req[i-1][strlen(token) + 1] = '\0';
 			if ( i == 1) {
@@ -161,7 +162,14 @@ int fd_readline_texto(eloop_data* data)
 				} else {
 					if ( conectado )
 					{
-						char **req = malloc(sizeof(char*) * 2);
+						char **req = tryalloc(data->hTable, sizeof(char*) * 2);
+						
+						if(req == NULL){
+							write(data->fd, "EOOM\n", 5);
+							i++;
+							continue; /// esta bien manejado este caso?
+						}
+
 						switch ( parseLineText(data, buffer + linea, req) )
 						{
 						case 0:

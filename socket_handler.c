@@ -52,11 +52,21 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Has
 
 	if(init){ //Si es el primer registro, cargamos la estructura
 		eloop_data *eloop = tryalloc(hTable, sizeof(eloop_data));
+
+		if(eloop == NULL)
+			return; /// dejamos pasar el cliente.
+
 		eloop->fd = cliente;
 		eloop->epfd = epoll_fd;
 		eloop->isText = (init==1);
 		if ( eloop->isText ) {
 			char* buffer = tryalloc(hTable,(sizeof(char)*READ_SIZE + 1) );
+			
+			if(buffer == NULL){
+				free(eloop);
+				return;
+			}
+
 			eloop->buff = buffer;
 			eloop->buffSize = 0;
 		} else {

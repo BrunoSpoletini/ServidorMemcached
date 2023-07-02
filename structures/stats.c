@@ -12,7 +12,7 @@ static inline void declLock(int *p) {
 */
 
 Stats *create_stats(Hashtable *ht){
-    Stats *newstats = tryalloc(ht, sizeof(Stats) ); /// esto se crea en el mismo momento que la tabla, asi que usamos malloc, y no tryalloc.
+    Stats *newstats = tryalloc(ht, sizeof(Stats) );
     if(newstats == NULL)
         return NULL;
     newstats->puts = 0;
