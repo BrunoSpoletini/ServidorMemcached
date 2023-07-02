@@ -38,6 +38,15 @@ void writeSock(eloop_data* data, int resp, bool endline){
 void processReq(eloop_data* data, char** req){
 	
  	if (( data->comm == STATS ) && req[0] == NULL){
+
+		Stats* snapshot = create_stats(data->hTable);
+		int ret = snapshot_stats( data->hTable, snapshot);
+		if(ret != OK){
+
+		}else{
+			
+		}
+
 		printf("Stat\n");
 		//do stuff
 	} 

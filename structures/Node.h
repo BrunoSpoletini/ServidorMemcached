@@ -7,7 +7,7 @@
 struct Node{
     char * key, *value;
     int lenkey, lenvalue;
-    unsigned long slug; 
+    unsigned long long slug; 
     int hash; /// el hash es el slug % tamaño de la tabla. Nos sirve para evitar comparaciones.
     bool printable;
 };
@@ -15,7 +15,7 @@ struct Node{
 
 void destroy_node(void* node);
 
-Node *create_node(Hashtable *ht,char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long slug,bool printable);
+Node *create_node(Hashtable *ht,char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long long slug,bool printable);
 
 bool equal_keys(void *na, void *nb);
 

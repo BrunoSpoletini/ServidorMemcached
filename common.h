@@ -50,53 +50,11 @@ void char_arr_cpy(char* str1, char* str2, int l);
 
  typedef struct Hashtable Hashtable;
 
-/* Estructura que almacena los datos de cada fd agregado a epoll */
-typedef struct _eloop_data {
-	int fd;
-	int epfd; // file descriptor de epoll
-	int isText;
-	char *buff;
-	int buffSize;
-	int einval;
-	int notPrintable;
-
-	int cont; // Se podria usar buffSize como contador para el parser binario, ya q el buff no se usa
-	int comm; //Esto se podria usar para el parser de texto tambien
-	char* key;
-	int keySize;
-	char* value;
-	int valueSize;
-	Hashtable* hTable;
-} eloop_data;
 
  typedef struct DList DList;
  typedef struct DNodo DNodo;
  typedef struct Stats Stats;
  typedef struct Node Node;
-
-/*
-Es lo que dio la catedra, lo vamos descomentando a medida q lo vayamos usando
-int valid_rq(int code);
-
-
-
-static const in_port_t mc_lport_text = 8888;
-static const in_port_t mc_lport_bin  = 8889;
-
-static inline void quit(char *s)
-{
-	perror(s);
-	exit(1);
-}
-
-#define STATIC_ASSERT(p)			\
-	int _ass_ ## __LINE__ [(!!(p)) - 1];
-
-const char * error_str(enum code e);
-*/
-
-
-
 
 
 

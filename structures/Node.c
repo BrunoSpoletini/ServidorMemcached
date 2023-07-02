@@ -17,16 +17,16 @@ void destroy_node(void* node){
 }
 
 Node* create_node_from_K(Hashtable *ht,char* key, int lenkey){ /// para el get y del
-    unsigned long slug = hash_string(key, lenkey);
+    unsigned long long slug = hash_string(key, lenkey);
     return create_node(ht,key,NULL,lenkey,0,slug%TABLESIZE, slug, false );
 }
 
 Node* create_node_from_KV(Hashtable *ht,char* key, int lenkey, char *value, int lenvalue){ /// para el put
-    unsigned long slug = hash_string(key, lenkey);
+    unsigned long long slug = hash_string(key, lenkey);
     return create_node(ht,key,value,lenkey,lenvalue,slug%TABLESIZE, slug, printable(value,lenvalue) );
 }
 
-Node *create_node(Hashtable *ht,char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long slug,bool printable){
+Node *create_node(Hashtable *ht,char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long long slug,bool printable){
     Node *node = tryalloc( ht , sizeof(Node) );
     if(node == NULL){
         return NULL;

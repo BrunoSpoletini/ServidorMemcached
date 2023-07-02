@@ -32,7 +32,7 @@ void *tryalloc(Hashtable *ht, unsigned bytes);
 bool evict(Hashtable *ht);
 
 // Recibe una string, su tamaño y devuelve un número entre 0 y TABLESIZE
-int hash_string(char *value, int size);
+unsigned long long int hash_string(char *value, int size);
 
 void *tryalloc(Hashtable *ht, unsigned bytes);
 char *copycat(Hashtable *ht,char *s, int len);

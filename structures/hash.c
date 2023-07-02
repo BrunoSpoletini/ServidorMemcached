@@ -16,18 +16,19 @@ Hashtable *create_table() {
   return ht;
 }
 
-int hash_string(char *value, int size) {
-  unsigned long long int key = 0;
-  for (int i = 0; i < size; i++) {
-    key += value[i] * pow(2, (i % 10));
+unsigned long long int hash_string(char *value, int size) {
+  unsigned long long int key = 0; /// al ser unsigned, ya de por si hace modulo MAX_ULLINT = 3 × 5 × 17 × 257 × 641 × 65537 × 6700417
+  unsigned long long R = 431;
+  for (int i = 0; i < size; i++) { /// entonces, usando un numero primo p distinto, tenemos 431*MAX_ULLINT como largo maximo del value.
+    key = (key*R)+ value[i];
+    //key += value[i] * pow(2, (i % 10));
   }
-  key = key % TABLESIZE;
-  return (int) key;
+  return key;
 }
 
 void dummyfree(void* data){
-
 }
+
 
 bool evict(Hashtable *ht){
 
