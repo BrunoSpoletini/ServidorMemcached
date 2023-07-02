@@ -1,6 +1,6 @@
 -module(client).
 
--export([start/0, start/1, put/3, del/2, get/2, take/2, stats/1, close/1]).
+-export([start/0, start/1, put/3, del/2, get/2, stats/1, close/1, test/0]).
 
 -define(PUT, 11).
 -define(DEL, 12).
@@ -59,9 +59,6 @@ manager(Sock) ->
         {get, K, PID} ->
             R = get_(Sock, K),
             PID ! R;
-        {take, K, PID} ->
-            R = take_(Sock, K),
-            PID ! R;
         {stats, PID} ->
             R = stats_(Sock),
             PID ! R;
@@ -82,15 +79,13 @@ del_(Sock, K) ->
 
 get_(Sock, K) ->
     gen_tcp:send(Sock, encode_cmd(?GET, K)),
-    parse(Sock, fun binary_to_term/1).
-
-take_(Sock, K) ->
-    gen_tcp:send(Sock, encode_cmd(?TAKE, K)),
-    parse(Sock, fun binary_to_term/1).
+    
+    parse(Sock, fun(Bin) ->list_to_atom(binary_to_list(Bin))end).
 
 stats_(Sock) ->
     gen_tcp:send(Sock, <<?STATS>>),
-    parse(Sock, fun binary_to_list/1).
+    parse(Sock, fun(Bin) ->list_to_atom(binary_to_list(Bin))end).
+    %parse(Sock, fun binary_to_list/1).
 
 close_(Sock) ->
     case gen_tcp:shutdown(Sock, read_write) of
@@ -101,12 +96,33 @@ close_(Sock) ->
             {error, Reason}
     end.
 
+
+
+%5-255*255 -> 4
+%255*255 - 255*255*255 -> 5
+%255^3 - 255^4 -> 6
+headerlen(Size, Top) ->
+    if (Size > Top) -> 1 + headerlen(Size,Top*255);
+        true -> 4
+    end.
+
+header(Size) -> headerlen (Size,255*255).
+
+
 % Funciones para poder encodear requests
 encode(Data) ->
+    io:fwrite("Tenemso que el dato en texto es ~p~n", [Data]),
     Bin = term_to_binary(Data),
+    io:fwrite("Tenemso que el dato es ~p~n", [Bin]),
     Size = byte_size(Bin),
-    BSize = <<Size:32>>,
-    <<BSize/binary, Bin/binary>>.
+    NewSize = Size - header(Size),
+    NewBin = binary:list_to_bin( binary:bin_to_list( Bin , {Size-NewSize,NewSize}  ) ),
+    io:fwrite("Tenemso que el dato es ~p~n", [NewBin]),
+    io:fwrite("size de la key nos da ~p~n", [NewSize]),
+    BSize = <<NewSize:32>>,
+    <<BSize/binary, NewBin/binary>>.
+    %BSize = <<Size:32>>,
+    %<<BSize/binary, Bin/binary>>.
 
 encode_cmd(Cmd, K) ->
     BKey = encode(K),
@@ -212,3 +228,13 @@ close(Conn) ->
         _ ->
             {error, noconn}
     end.
+
+
+test() ->
+    {A,B} = start(),
+    io:fwrite("1: ~p~n", [ put(B,"pepe","hola") ]),
+    io:fwrite("2: ~p~n", [ get(B,"hello") ]),
+    get(B,"pepe").
+
+
+

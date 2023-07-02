@@ -214,6 +214,8 @@ void cleanEloop( eloop_data* data){
 	data->valueSize = 0;
 }
 
+
+
 void parseBin(eloop_data* data){
 	char* req[2];
 	printf("- %s - %d - %s - %d-\n", data->key, data->keySize, data->value, data->valueSize);
@@ -237,6 +239,12 @@ void parseBin(eloop_data* data){
 		}
 		break;
 	case 13: //GET
+			
+			printf("el keysize nos da:\n");
+			for(int i = 0; i < 32; i++){
+				printf( "%d" , ( (data->keySize & (1<<i)) > 0) );
+			}
+
 		if ( data->cont == data->keySize + 5 ){
 			req[0] = data->key;
 			req[1] = NULL;
@@ -316,6 +324,7 @@ int fd_readline_bin(eloop_data* data){
 			case 0: // Leer el comando
 				data->comm = buffL[i];
 				printf("[0]");
+				printf("El comando es %d\n",data->comm);
 				break;
 			case 1: // Leer keySize 
 				printf("[1]");
