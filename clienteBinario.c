@@ -261,12 +261,12 @@ void put(const char *k)
 
 	/* Pedir */
 	{ 
-		if (0){ // Forma en la que vino el cliente binario (debemos tener algun problema para manejar el terminador)
+		if (0){ // Fix para hacer pruebas rapidas
 		int comm = PUT;
 		writen(fd, &comm, 1);
 		send_var(fd, strlen(k), k);
 		send_var(fd, strlen(k), k);
-		} else { //Forma en la anda el cliente binario
+		} else { // Forma en la que vino el cliente binario
 			int comm = PUT;
 			writen(fd, &comm, 1);
 			send_var(fd, strlen(k), k);
@@ -277,8 +277,6 @@ void put(const char *k)
 			send_var(fd, len, buf);//
 			free(buf);//
 		}
-
-
 	}
 
 	/* Ver respuesta */
@@ -291,7 +289,6 @@ void put(const char *k)
 		fprintf(stderr, "\nOK\n");
 	}
 }
-
 
 void stats()
 {

@@ -79,34 +79,6 @@ int main()
 		while(!trybind(i,j)){
 			j++;
 		}
-		/*
-
-		{
-			struct sockaddr_in clientaddr;
-			srand (time(NULL));
-			int portnum = 10000+i;//rand() % 10000 + 10000;
-			int ipaddrnum = 10+i;//rand() / 10000 + 10;
-			printf("tenemos portnumm = %d, ipaddrun = %d\n",portnum,ipaddrnum );
-			char ipaddr[32];
-
-			memset(&clientaddr, 0, sizeof(clientaddr));
-			clientaddr.sin_family = AF_INET;
-			clientaddr.sin_port = htons(portnum);
-			sprintf(ipaddr, "127.0.0.%d", ipaddrnum);
-			inet_pton(AF_INET, ipaddr, &clientaddr.sin_addr);
-			rc = -1;
-			printf("llego al while\n");
-			while (rc < 0){
-				rc = bind(sock[i], (struct sockaddr *)&clientaddr, sizeof(clientaddr));
-			}
-			printf("paso el while\n");
-			if (rc < 0) {
-				perror("ECHOCLNT: Error llamando a bind()");
-				return -1;
-			}
-		}
-		*/
-
 
 		rc = connect(sock[i], (struct sockaddr *)&servaddr, sizeof(servaddr));
 		if (rc < 0) {
@@ -121,21 +93,11 @@ int main()
 
 	for (i = 0; i < 100; i++) {
 
-		/*
-		// Cliente conectado
-		cto = read(sock[i], buffer, sizeof(buffer) - 1);
-		if (cto < 0) {
-			perror("CLNT: Error leyendo");
-			return -1;
-		}
-		printf("%s\n", buffer);
-		*/
-
 		int rc = 0;
 		sprintf(buffer2,"PUT C%d %d\nAWDS\nGET C%d\nPUT clave val\n", i+430, i+430,i+430);
 		cto = strlen(buffer2);
 
-#if q
+#if 1
 		rc = write(sock[0], buffer2, cto);
 		if (rc < 0) {
 			perror("CLNT: Error escribiendo");
@@ -154,7 +116,7 @@ int main()
 		}
 #endif
 
-		printf("\nllegamos a la parte de las rspuestas\n");
+		printf("\nLlegamos a la parte de las respuestas\n");
 
 		// ok
 
@@ -187,58 +149,7 @@ int main()
 				}
 			}
 			index += cto;
-
 		}
-		/*
-
-		cto = read(sock[0], buffer, sizeof(buffer) - 1);
-		if (cto < 0) {
-			perror("CLNT: Error leyendo");
-			return -1;
-		}
-		buffer[cto] = 0;
-		printf("%s\n", buffer);
-
-		//comando inv
-		printf("segunda\n");
-		cto = read(sock[0], buffer, sizeof(buffer) - 1);
-		if (cto < 0) {
-			perror("CLNT: Error leyendo");
-			return -1;
-		}
-		buffer[cto] = 0;
-		printf("%s\n", buffer);
-
-		//Resp
-		printf("tercera\n");
-		cto = read(sock[0], buffer, sizeof(buffer) - 1);
-		if (cto < 0) {
-			perror("CLNT: Error leyendo");
-			return -1;
-		}
-		buffer[cto] = 0;
-		printf("%s\n", buffer);
-
-		//aux
-		printf("cuarta\n");
-		cto = read(sock[0], buffer, sizeof(buffer) - 1);
-		if (cto < 0) {
-			perror("CLNT: Error leyendo");
-			return -1;
-		}
-		buffer[cto] = 0;
-		printf("%s\n", buffer);
-
-		*/
-
-		// rc = 0;
-		// sprintf(buffer3,"CHAU\n");
-		// cto = strlen(buffer3);
-		// rc = write(sock[i], buffer3, cto);
-		// if (rc < 0) {
-		// 	perror("CLNT: Error escribiendo");
-		// 	return -1;
-		// }
 	}
 
 	return 0;
