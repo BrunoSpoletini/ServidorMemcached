@@ -238,6 +238,8 @@ void cleanEloop( eloop_data* data){
 	data->cont = 0;
 	data->keySize = 0;
 	data->valueSize = 0;
+	data->key = NULL;
+	data->value = NULL;
 }
 
 // Checkea si la solicitud recibida es valida y la procesa
@@ -355,15 +357,13 @@ int fd_readline_bin(eloop_data* data){
 				data->value[data->cont - data->keySize - 9] = buffL[i];
 				break;
 			default:
-				//return -1;
-				printf("default");
+				return -1;
 			}
 			data->cont++;
 
 			if (i == (rc-1)) {
 				if (parseBin(data) == -1){
-					printf("test");
-					//return -1;
+					return -1;
 				}
 			}
 		}

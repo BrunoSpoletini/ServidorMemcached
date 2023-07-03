@@ -14,7 +14,7 @@
 #define DEFAULT_BIN_SOCKET 889
 
 // Limite de memoria del servidor por defecto
-#define DEFAULT_MEM_LIMIT 60*1000000  ///  60MB
+#define DEFAULT_MEM_LIMIT 6000*1000000ull  ///  60MB
 
 // Tamaño de la tabla hash
 #define TABLESIZE 50000

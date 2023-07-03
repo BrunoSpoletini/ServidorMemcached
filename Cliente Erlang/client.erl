@@ -14,6 +14,10 @@
 -define(EUNK, 115).
 -define(EOOM, 116).
 
+test() -> {_,B} = start(),
+put(B,"clave","testdon
+    ereaawgfawgawgawgawawgasehgosjslekghjwslieghlsejnmhlskjmhlkñdrjmhldkjmholpdreehljsdlrhkldrhmldmñrtjlgawgawgawgawgdn"),
+get(B,"clave").
 
 decode(Code) ->
     case Code of

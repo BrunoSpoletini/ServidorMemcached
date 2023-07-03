@@ -9,7 +9,7 @@
 
 int tsocket = DEFAULT_TEXT_SOCKET;
 int bsocket = DEFAULT_BIN_SOCKET;
-unsigned long mlimit = DEFAULT_MEM_LIMIT;
+unsigned long long mlimit = DEFAULT_MEM_LIMIT;
 int nthreads = DEFAULT_MAX_THREADS;
 
 /*
