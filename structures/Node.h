@@ -2,7 +2,6 @@
 #define __NODE_H__
 
 #include "../common.h"
-#include "../utils.h"
 
 struct Node{
     char * key, *value;

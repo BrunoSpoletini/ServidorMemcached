@@ -9,7 +9,6 @@
 #include "structures/dlist.h"
 #include "common.h"
 #include "socket_handler.h"
-#include "utils.h"
 
 // Maneja la información que llega por un socket de un cliente
 void handleConn(eloop_data* data);

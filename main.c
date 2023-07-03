@@ -5,7 +5,6 @@
 #include <pthread.h>
 #include <sys/resource.h>
 #include "common.h"
-#include "utils.h"
 #include "socket_handler.h"
 
 int tsocket = DEFAULT_TEXT_SOCKET;

@@ -19,7 +19,6 @@
 #include "structures/dlist.h"
 #include "common.h"
 #include "socket_handler.h"
-#include "utils.h"
 #include "reqHandler.h"
 
 

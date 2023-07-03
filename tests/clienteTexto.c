@@ -114,10 +114,6 @@ int main()
 		}
 #endif
 
-		//printf("\nLlegamos a la parte de las respuestas\n");
-
-		// ok
-
 		int index = 0;
 		int voy = 0;
 

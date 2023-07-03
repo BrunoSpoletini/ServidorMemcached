@@ -54,5 +54,11 @@ int char_arr_cmp(char* str1, char* str2, int l);
 // Compara dos arrays de caracteres del mismo largo
 void char_arr_cpy(char* str1, char* str2, int l);
 
+// devuelve si una cadena de texto contiene solo caracteres imprimibles.
+bool printable(char *s, int len);
+
+//convierte un entero a un string.
+char *itos(int i);
+
 
 #endif
