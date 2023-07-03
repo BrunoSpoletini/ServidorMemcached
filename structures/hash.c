@@ -130,7 +130,6 @@ int _PUT(Hashtable *ht, Node *node){
           return EOOM;
         }
 
-
         newnode->othernode = newnodeLRU; /// linkeamos los nodos entre si.
         newnodeLRU->othernode = newnode;
 
@@ -170,40 +169,33 @@ int _GET(Hashtable *ht, Node *node, char** retval, int *size, bool *printable){ 
   pthread_mutex_lock( &ht->rlock[index] );
 
   DNodo *elem = dlist_buscar_nodo(ht->row[index], node, equal_keys);
-  
-  //destroy_node(node); // capaz esto se puede hacer afuera? para consumir menos el lock.
 
   if(elem == NULL){
     pthread_mutex_unlock( &ht->rlock[index] );
+    destroy_node(node);
     return ENOTFOUND;
   }
   Node* data = elem->dato;
   
-
   (*printable) = data->printable;
   (*size) = data->lenvalue;
-
-  //printf("Size del valor en el get:%d - %d\n", data->lenvalue, (*size));DEBUG
-
   (*retval) = copycat(ht, data->value , data->lenvalue); /// copiamos por si alguien mas la edita / elimina en el medio.
 
   if( (*retval) == NULL){
     pthread_mutex_unlock( &ht->rlock[index] );
+    destroy_node(node);
     return EOOM;
   }
   updateLRU(ht,elem->othernode);
 
   pthread_mutex_unlock(&ht->rlock[index]);
 
-  destroy_node(node); // fuera de la zona critica.
+  destroy_node(node); // destruimos fuera de la zona critica.
 
   return OK;
 }
 
-
-
-
-int _DEL(Hashtable *ht,Node *node){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+int _DEL(Hashtable *ht,Node *node){ 
   add_del(ht->stats);
 
   int index = node->hash;

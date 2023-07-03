@@ -82,13 +82,7 @@ void *wait_for_clients(void *threadParam)
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL, hTable);
 				}
 			} else {
-				printf("EPOLL\n");
-				//if ( isSocketUp(event_fd) ){
-					handleConn(data);
-				//} else {
-				//	printf("DESCONECTADO LINCE\n");
-				//	desconectarCliente(data);
-				//}
+				handleConn(data);
 			}
 		}
 	}

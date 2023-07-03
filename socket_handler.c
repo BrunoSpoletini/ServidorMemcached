@@ -59,6 +59,9 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Has
 		eloop->fd = cliente;
 		eloop->epfd = epoll_fd;
 		eloop->isText = (init==1);
+		eloop->key = NULL;
+		eloop->value = NULL;
+		eloop->buff = NULL;
 		if ( eloop->isText ) {
 			char* buffer = tryalloc(hTable,(sizeof(char)*READ_SIZE + 1) );
 			
@@ -106,16 +109,15 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 
 void desconectarCliente(eloop_data* data){
 
-	if ()
-	// habria que free() al buffer y a la estructura.
-	printf("aca corresponde sacar el cliente de fd = %d\n",data->fd);
+	if(data->buff != NULL){
+		free(data->buff);
+	}
+	if(data->value != NULL){
+		free(data->value);	
+	}
+	if(data->key != NULL){
+		free(data->key);
+	}
 	close(data->fd);
-}
-
-int isSocketUp(int socket_fd){
-	int error = 0;
-	socklen_t len = sizeof (error);
-	int retval = getsockopt (socket_fd, SOL_SOCKET, SO_ERROR, &error, &len);
-
-	return (retval==0) && (error==0);
+	free(data);
 }

@@ -12,8 +12,8 @@ void destroy_node(void* node){
     if(aux->value != NULL)
         free(aux->value);
     
-    //if(node != NULL)
-        //free(node);
+    if(node != NULL)
+        free(node);
 }
 
 Node* create_node_from_K(Hashtable *ht,char* key, int lenkey){ /// para el get y del

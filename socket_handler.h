@@ -11,8 +11,9 @@ typedef struct _eloop_data {
 	char *buff;
 	int buffSize;
 	int cont, comm;
-	int keySize, valueSize
-	char* key, value;
+	int keySize, valueSize;
+	char* key;
+	char* value;
 	Hashtable* hTable;
 } eloop_data;
 

@@ -5,18 +5,12 @@
 void handleConn(eloop_data* data)
 {	
 	int rc = data->isText? fd_readline_texto(data) : fd_readline_bin(data);
-
-	 if ( rc == -1 )
-	 	quit("Fallo al leer");
-
-	if ( rc == 0 ){
-		printf("cliente desconectado\n");
-		desconectarCliente(data);
-	}
-
+	
 	 if ( rc > 0 ){
 		agregarClienteEpoll(data->fd, data->epfd, 0, (void*)data, data->hTable);
-	} 
+	} else {
+		desconectarCliente(data);
+	}
 }
 
 void writeSock(eloop_data* data, int resp, bool endline){
@@ -45,7 +39,7 @@ void processReq(eloop_data* data, char** req){
 			writeSock(data, ret, true);
 		}else{
 
-			char *str = tryalloc(data->hTable, sizeof(char) * (24 + 4 * 18) ); /// cada valor puede ser de hasta 18 caracteres.
+			char *str = tryalloc(data->hTable, sizeof(char) * (23 + 4 * 18) ); /// cada valor puede ser de hasta 18 caracteres.
 			sprintf(str, "PUTS=%lld DELS=%lld GETS=%lld KEYS=%lld", snapshot->puts, snapshot->dels, snapshot->gets, snapshot->keys);
 			int size = strlen(str);
 
@@ -72,7 +66,6 @@ void processReq(eloop_data* data, char** req){
 	}
 	else if (( data->comm == GET ) && req[1] == NULL)
 	{
-		printf("LARGO STRLEN: %d\n ", data->keySize);
 		Node* nodo = create_node_from_K(data->hTable,req[0], data->keySize); 
 		char* res = NULL;
 		int size;
@@ -184,7 +177,7 @@ int fd_readline_texto(eloop_data* data)
 				} else {
 					if ( conectado )
 					{
-						char **req = tryalloc(data->hTable, sizeof(char*) * 2);
+						char **req = tryalloc(data->hTable, sizeof(char*) * 3);
 						
 						if(req == NULL){
 							write(data->fd, "EOOM\n", 5);
@@ -195,6 +188,12 @@ int fd_readline_texto(eloop_data* data)
 						switch ( parseLineText(data, buffer + linea, req) )
 						{
 						case 0:
+							int j = 0;
+							while(req[j] != NULL){
+								free(req[j]);
+								j++;
+							}
+
 							write(data->fd, "Comando invalido\n", 17);
 							break;
 						case 1:
@@ -204,6 +203,8 @@ int fd_readline_texto(eloop_data* data)
 							conectado = 0;
 							break;
 						}
+						free(req);
+						
 					}
 				}
 				data->notPrintable = 0;
@@ -239,7 +240,7 @@ void cleanEloop( eloop_data* data){
 
 
 void parseBin(eloop_data* data){
-	char* req[2];
+	char* req[3];
 	printf("- %s - %d - %s - %d-\n", data->key, data->keySize, data->value, data->valueSize);
 	switch (data->comm)
 	{
