@@ -49,7 +49,7 @@ bool evict(Hashtable *ht){
 
       dlist_eliminar_nodo(ht->row[data->hash], node->othernode, destroy_node);
       dlist_eliminar_nodo(ht->LRU, node, dummyfree); /// el nodo de la LRU.
-
+      del_key(ht->stats);
 
       pthread_mutex_unlock( &ht->rlock[data->hash] );
       pthread_mutex_unlock( &ht->locklru );

@@ -6,35 +6,6 @@
 #include "common.h"
 #include "socket_handler.h"
 
-int lsock_tcp(int port)
-{
-	struct sockaddr_in sa;
-	int lsock;
-	int rc;
-	int yes = 1;
-
-	lsock = socket(AF_INET, SOCK_STREAM, 0);
-	if (lsock < 0)
-		quit("socket");
-
-	if (setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == 1)
-		quit("setsockopt");
-
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port);
-	sa.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	rc = bind(lsock, (struct sockaddr *)&sa, sizeof sa);
-	if (rc < 0)
-		quit("bind");
-
-	rc = listen(lsock, MAX_CLIENTS_QUEUE);
-	if (rc < 0)
-		quit("listen");
-
-	return lsock;
-}
-
 int create_epoll()
 {
 	int epoll_fd = epoll_create1(0);

@@ -23,6 +23,12 @@
 #include "reqHandler.h"
 
 
+int c=0;
+
+static inline void inclLock(int *p) {
+asm("lock; incl %0" : "+m"(*p) : : "memory");
+}
+
 void *wait_for_clients(void *threadParam)
 {
 	int events_count, epoll_fd, csock, textSock, binSock, event_fd;
@@ -38,14 +44,13 @@ void *wait_for_clients(void *threadParam)
 	struct epoll_event events[MAX_EVENTS];
 	while (1)
 	{
-		printf("soy un thread esperando data\n");
 		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-		printf("soy un thread que paso\n");
-
 		for (int i = 0; i < events_count; i++){
+
 			data = ((eloop_data*)events[i].data.ptr);
 			event_fd = data->fd;
-			if ( (event_fd == textSock)|| (event_fd == binSock) ){
+inclLock(&c);printf("%d\n",c);
+			if ( (event_fd == textSock) || (event_fd == binSock) ){
 				csock = accept(event_fd, NULL, NULL);
 				if (csock == -1){
 					quit("Fallo al aceptar un cliente");
@@ -53,13 +58,12 @@ void *wait_for_clients(void *threadParam)
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL, hTable);
 				}
 			} else {
+
 				handleConn(data);
 			}
 		}
 	}
 }
-
-
 
 int main(int argc, char **argv){
 
