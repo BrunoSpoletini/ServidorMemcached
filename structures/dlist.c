@@ -1,6 +1,5 @@
 #include "dlist.h"
 
-
 DList *dlist_crear() {
   DList *lista = malloc(sizeof(DList));
   lista->primero = NULL;
@@ -44,7 +43,6 @@ void dlist_agregar_final(DList * lista, DNodo *nuevoNodo) {
   lista->ultimo = nuevoNodo;
 }
 
-
 DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare){
 
   DNodo *aux = lista->primero;
@@ -73,10 +71,8 @@ void dlist_deslinkear(DList * lista, DNodo * nodo){
 }
 
 void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato) {
-
   dlist_deslinkear(lista,nodo);
   dlist_destruir_nodo(nodo,liberarDato);
-
 }
 
 

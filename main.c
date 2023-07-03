@@ -115,7 +115,6 @@ int main(int argc, char **argv){
 	if (!std_down_privileges())
         quit("No se pueden bajar los privilegios.\n");  
 
-
     if (access("./server", F_OK) == 0){
 		 //execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
         execl("./server" , "./server" , itos(text_socket) , itos(bin_socket) , itos(nthreads) ,  NULL); 

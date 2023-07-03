@@ -231,17 +231,18 @@ int fd_readline_texto(eloop_data* data)
 	return rc;
 }
 
+/* Handler binario */
+
+// Limpia los valores de data respectivos al parseo binario
 void cleanEloop( eloop_data* data){
 	data->cont = 0;
 	data->keySize = 0;
 	data->valueSize = 0;
 }
 
-
-
-void parseBin(eloop_data* data){
+// Checkea si la solicitud recibida es valida y la procesa
+int parseBin(eloop_data* data){
 	char* req[3];
-	printf("- %s - %d - %s - %d-\n", data->key, data->keySize, data->value, data->valueSize);
 	switch (data->comm)
 	{
 	case 11: //PUT
@@ -262,12 +263,6 @@ void parseBin(eloop_data* data){
 		}
 		break;
 	case 13: //GET
-			
-			printf("el keysize nos da:\n");
-			for(int i = 0; i < 32; i++){
-				printf( "%d" , ( (data->keySize & (1<<i)) > 0) );
-			}
-
 		if ( data->cont == data->keySize + 5 ){
 			req[0] = data->key;
 			req[1] = NULL;
@@ -283,22 +278,24 @@ void parseBin(eloop_data* data){
 		}
 		break;
 	default:
-		quit("Comando invalido"); //DEBUG - Decidir que hacer si nos llegan comandos binarios invalidos
+		return -1;
 		break;
 	}
+	return 0;
 }
 
-/* Handler binario */
+/* 
+Usa el contador de eloop_data para devolver la etapa en sobre la solicitud sobre la que se encuentra
+Si detecta una solicitud completa, la procesa y devuelve la nueva etapa correspondiente.
+*/
 int etapaBin( eloop_data* data ){
 	int val = data->cont;
-printf("\nAAAAAAAAA - data->cont: %d, y deberia ser: %d AAAAAA", data->cont, (9 + data->keySize + data->valueSize));
 	if ( val < 1) // Comando
 		return 0;
 
 	//Procesar STATS
 	if ( (val == 1) && (data->comm == STATS) ){ 
-		parseBin(data);
-		return 0;
+		return parseBin(data);
 	}
 
 	if ( val < 5 ) // keySize
@@ -313,8 +310,7 @@ printf("\nAAAAAAAAA - data->cont: %d, y deberia ser: %d AAAAAA", data->cont, (9 
 
 	// Procesar GET o DEL
 	if ( (val == (5 + data->keySize) ) && ( (data->comm == GET) || (data->comm == DEL) ) ){ 
-		parseBin(data);
-		return 0;
+		return parseBin(data);
 	}
 
 	if ( val < (9 + data->keySize) ) // valueSize
@@ -329,8 +325,7 @@ printf("\nAAAAAAAAA - data->cont: %d, y deberia ser: %d AAAAAA", data->cont, (9 
 
 	// Procesar PUT
 	if ( (val == (9 + data->keySize + data->valueSize) ) && (data->comm == PUT ) ){ 
-		parseBin(data);
-		return 0;
+		return parseBin(data);
 	}
 	return -1;
 }
@@ -346,36 +341,30 @@ int fd_readline_bin(eloop_data* data){
 			{
 			case 0: // Leer el comando
 				data->comm = buffL[i];
-				printf("[0]");
-				printf("El comando es %d\n",data->comm);
 				break;
 			case 1: // Leer keySize 
-				printf("[1]");
 				data->keySize = data->keySize | (buffL[i] << (8*(4-data->cont)));
 				break;
 			case 2: // Leer key
-				printf("[2]");
 				data->key[data->cont - 5] = buffL[i];
 				break;
 			case 3: // Leer valueSize
-				printf("[3]");
 				data->valueSize = data->valueSize | (buffL[i] << (8*(8 + data->keySize - data->cont)));
 				break;
 			case 4: // Leer value
-				printf("[4]");
 				data->value[data->cont - data->keySize - 9] = buffL[i];
 				break;
 			default:
-				quit("Error en el parser binario\n");
-				break;
+				return -1;
 			}
 			data->cont++;
 
 			if (i == (rc-1)) {
-				parseBin(data);
+				if (parseBin(data) == -1)
+					return -1;
 			}
 		}
 	}
 	
-	return rc; //En teoria si rc == 0, el handle_conection desconecta al cliente
+	return rc;
 }

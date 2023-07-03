@@ -28,7 +28,6 @@ unsigned long long int hash_string(char *value, int size) {
 void dummyfree(void* data){
 }
 
-
 bool evict(Hashtable *ht){
 
   pthread_mutex_lock( &ht->locklru );
@@ -60,9 +59,7 @@ bool evict(Hashtable *ht){
     node = node->sig;
   }
 
-
   pthread_mutex_unlock( &ht->locklru );
-
 
   return false;
 }
@@ -142,8 +139,7 @@ int _PUT(Hashtable *ht, Node *node){
 
       add_key(ht->stats);
 
-    }else{/// ya existe la clave:
-
+    } else {/// ya existe la clave:
 
         Node *trash = elem->dato;
         elem->dato = node;
@@ -153,12 +149,9 @@ int _PUT(Hashtable *ht, Node *node){
 
         destroy_node(trash); /// fuera de la zona critica.
 
-
     }
-
       return OK;
 }
-
 
 int _GET(Hashtable *ht, Node *node, char** retval, int *size, bool *printable){
   add_get(ht->stats);

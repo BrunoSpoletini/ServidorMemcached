@@ -35,20 +35,19 @@ void dlist_destruir(void *lista);
 //  Agrega un elemento al final de la lista.
 void dlist_agregar_final(DList * lista, DNodo *nuevoNodo);
 
-
 // Dada una lista y un nodo, elimina el nodo de la lista y libera la memoria
 void dlist_eliminar_nodo(DList * lista, DNodo * nodo, FuncionVisitante liberarDato);
 
-// compara los nodos de la lista segun la funcion compare, y devuelve el primero que matchea.
+// Compara los nodos de la lista segun la funcion compare, y devuelve el primero que matchea.
 DNodo *dlist_buscar_nodo(DList * lista, void *nodo, FuncionComparativa compare);
 
-// crea un nodo, pidiendo memoria a la tabla hash de ser necesario.
+// Crea un nodo, pidiendo memoria a la tabla hash de ser necesario.
 DNodo *dlist_crear_nodo(Hashtable *ht , Node* dato);
 
-//deslinkea (no libera memoria) un nodo de una lista
+// Deslinkea (no libera memoria) un nodo de una lista
 void dlist_deslinkear(DList * lista, DNodo * nodo);
 
-//Destruye un nodo
+// Destruye un nodo
 void dlist_destruir_nodo(DNodo * nodo, FuncionVisitante liberarDato);
 
 #endif                          /* __DLIST_H__ */
