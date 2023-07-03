@@ -28,7 +28,7 @@ int lsock_tcp(int port)
 	if (rc < 0)
 		quit("bind");
 
-	rc = listen(lsock, MAX_CLIENTS);
+	rc = listen(lsock, MAX_CLIENTS_QUEUE);
 	if (rc < 0)
 		quit("listen");
 
@@ -87,7 +87,6 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Has
 		close(epoll_fd);
 		quit("Fallo al agregar cliente a epoll\n");
 	}
-	if(init) printf("Cliente conectado con fd = %d\n",cliente); //DEBUG
 }
 
 void agregarSocketEpoll(int sock, int epoll_fd){
@@ -107,15 +106,7 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 
 void desconectarCliente(eloop_data* data){
 
-	write(data->fd, "Cliente desconectado\n", 21);
-	/*
-	if (epoll_ctl(data->epfd, EPOLL_CTL_DEL, data->fd, NULL) == -1)
-	{
-		close(data->epfd);
-		quit("Fallo al quitar fd de epoll\n");
-	}
-	*/
-	/// no hace falta sacarlo del epoll porque ya consumimos su peticion?
+	if ()
 	// habria que free() al buffer y a la estructura.
 	printf("aca corresponde sacar el cliente de fd = %d\n",data->fd);
 	close(data->fd);

@@ -74,7 +74,7 @@ void *wait_for_clients(void *threadParam)
 		for (int i = 0; i < events_count; i++){
 			data = ((eloop_data*)events[i].data.ptr);
 			event_fd = data->fd;
-			if ( (event_fd == textSock) || (event_fd == binSock) ){
+			if ( (event_fd == textSock)|| (event_fd == binSock) ){
 				csock = accept(event_fd, NULL, NULL);
 				if (csock == -1){
 					quit("Fallo al aceptar un cliente");
@@ -109,19 +109,16 @@ int main(int argc, char **argv){
 	agregarSocketEpoll(textSock, epoll);
 	agregarSocketEpoll(binSock, epoll);
 
+	pthread_t t[MAX_THREADS];
 
-	long Nprocessors = sysconf(_SC_NPROCESSORS_ONLN);
-	
-	pthread_t t[Nprocessors];
-
-	for (int i = 0; i < Nprocessors; i++){
+	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
 	}
 	
 
 	// Contemplar opcion de cerrar el servidor
 	//destruir_tabla(hTable);
-	for (int i = 0; i < Nprocessors; i++){
+	for (int i = 0; i < MAX_THREADS; i++){
 		pthread_join(t[i], NULL);
 	}
 
