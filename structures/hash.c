@@ -21,7 +21,6 @@ unsigned long long int hash_string(char *value, int size) {
   unsigned long long R = 431;
   for (int i = 0; i < size; i++) { /// entonces, usando un numero primo p distinto, tenemos 431*MAX_ULLINT como largo maximo del value.
     key = (key*R)+ value[i];
-    //key += value[i] * pow(2, (i % 10));
   }
   return key;
 }
@@ -80,15 +79,6 @@ void *tryalloc(Hashtable *ht, unsigned bytes){
     }
 
     return ret;
-}
-
-char *copycat(Hashtable *ht,char *s, int len){
-  char *c = tryalloc(ht , len);
-  if(c == NULL){
-    return NULL;
-  }
-  char_arr_cpy(c, s, len);
-  return c;
 }
 
 
@@ -161,7 +151,7 @@ int _PUT(Hashtable *ht, Node *node){
 }
 
 
-int _GET(Hashtable *ht, Node *node, char** retval, int *size, bool *printable){ /// podemos usar un node vacio, que solo contiene la key y el lenkey (total son las unicas dos cosas que se usan al comparar).
+int _GET(Hashtable *ht, Node *node, char** retval, int *size, bool *printable){
   add_get(ht->stats);
 
   int index = node->hash;

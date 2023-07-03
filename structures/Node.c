@@ -16,12 +16,12 @@ void destroy_node(void* node){
         free(node);
 }
 
-Node* create_node_from_K(Hashtable *ht,char* key, int lenkey){ /// para el get y del
+Node* create_node_from_K(Hashtable *ht,char* key, int lenkey){
     unsigned long long slug = hash_string(key, lenkey);
     return create_node(ht,key,NULL,lenkey,0,slug%TABLESIZE, slug, false );
 }
 
-Node* create_node_from_KV(Hashtable *ht,char* key, int lenkey, char *value, int lenvalue){ /// para el put
+Node* create_node_from_KV(Hashtable *ht,char* key, int lenkey, char *value, int lenvalue){
     unsigned long long slug = hash_string(key, lenkey);
     return create_node(ht,key,value,lenkey,lenvalue,slug%TABLESIZE, slug, printable(value,lenvalue) );
 }

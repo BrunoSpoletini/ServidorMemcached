@@ -42,6 +42,9 @@ int char_arr_cmp(char* str1, char* str2, int l);
 // Compara dos arrays de caracteres del mismo largo
 void char_arr_cpy(char* str1, char* str2, int l);
 
+//devuelve una copia de un char* dado, o NULL si no hay memoria disponible. 
+char *copycat(Hashtable *ht,char *s, int len);
+
  typedef struct Hashtable Hashtable;
  typedef struct DList DList;
  typedef struct DNodo DNodo;

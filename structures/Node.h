@@ -12,16 +12,22 @@ struct Node{
     bool printable;
 };
 
-
+// libera la memoria asociada a un nodo.
 void destroy_node(void* node);
 
-Node *create_node(Hashtable *ht,char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long long slug,bool printable);
+//crea un nodo a partil de su clave
+Node* create_node_from_K(Hashtable *ht,char* key, int lenkey);
 
-bool equal_keys(void *na, void *nb);
-
+// crea un nodo a paratir de su clave y su valor.
 Node* create_node_from_KV(Hashtable *ht,char* key, int lenkey, char *value, int lenvalue);
 
-Node* create_node_from_K(Hashtable *ht,char* key, int lenkey);
+//crea un nodo segun todos sus parametros.
+Node *create_node(Hashtable *ht,char *key, char* value, int lenkey, int lenvalue, int hash,unsigned long long slug,bool printable);
+
+//compara eficientemente si dos nodos tienen la misma clave.
+bool equal_keys(void *na, void *nb);
+
+
 
 
 #endif

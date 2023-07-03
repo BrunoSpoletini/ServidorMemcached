@@ -1,16 +1,5 @@
 #include "stats.h"
 
-/*
-static inline void inclLock(int *p) {
-    asm("lock; incl %0" : "+m"(*p) : : "memory");
-}
-
-
-static inline void declLock(int *p) {
-    asm("lock; decl %0" : "+m"(*p) : : "memory");
-}
-*/
-
 Stats *create_stats(Hashtable *ht){
     Stats *newstats = tryalloc(ht, sizeof(Stats) );
     if(newstats == NULL)

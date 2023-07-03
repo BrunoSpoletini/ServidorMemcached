@@ -32,9 +32,6 @@ void dlist_destruir(void *lista) {
   free(lista);
 }
 
-
-
-
 void dlist_agregar_final(DList * lista, DNodo *nuevoNodo) {
   nuevoNodo->ant = lista->ultimo;
 
@@ -63,7 +60,6 @@ void dlist_destruir_nodo(DNodo * nodo, FuncionVisitante liberarDato){
   liberarDato(nodo->dato); 
   free(nodo);
 }
-
 
 void dlist_deslinkear(DList * lista, DNodo * nodo){
   if (nodo->ant == NULL)

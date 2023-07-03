@@ -111,18 +111,12 @@ header(Size) -> headerlen (Size,255*255).
 
 % Funciones para poder encodear requests
 encode(Data) ->
-    io:fwrite("Tenemso que el dato en texto es ~p~n", [Data]),
     Bin = term_to_binary(Data),
-    io:fwrite("Tenemso que el dato es ~p~n", [Bin]),
     Size = byte_size(Bin),
     NewSize = Size - header(Size),
     NewBin = binary:list_to_bin( binary:bin_to_list( Bin , {Size-NewSize,NewSize}  ) ),
-    io:fwrite("Tenemso que el dato es ~p~n", [NewBin]),
-    io:fwrite("size de la key nos da ~p~n", [NewSize]),
     BSize = <<NewSize:32>>,
     <<BSize/binary, NewBin/binary>>.
-    %BSize = <<Size:32>>,
-    %<<BSize/binary, Bin/binary>>.
 
 encode_cmd(Cmd, K) ->
     BKey = encode(K),
@@ -228,13 +222,5 @@ close(Conn) ->
         _ ->
             {error, noconn}
     end.
-
-
-test() ->
-    {A,B} = start(),
-    io:fwrite("1: ~p~n", [ put(B,"pepe","hola") ]),
-    io:fwrite("2: ~p~n", [ get(B,"hello") ]),
-    get(B,"pepe").
-
 
 

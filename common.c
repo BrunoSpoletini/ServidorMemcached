@@ -55,3 +55,13 @@ void char_arr_cpy(char* str1, char* str2, int l){
 		str1[i] = str2[i];
 	}
 }
+
+char *copycat(Hashtable *ht,char *s, int len){
+  char *c = tryalloc(ht , len);
+  if(c == NULL){
+    return NULL;
+  }
+  char_arr_cpy(c, s, len);
+  return c;
+}
+
