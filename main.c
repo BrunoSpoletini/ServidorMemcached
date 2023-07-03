@@ -10,6 +10,7 @@
 int tsocket = DEFAULT_TEXT_SOCKET;
 int bsocket = DEFAULT_BIN_SOCKET;
 unsigned long mlimit = DEFAULT_MEM_LIMIT;
+int nthreads = DEFAULT_MAX_THREADS;
 
 /*
 Este archivo main deberia ser el primero en llamar, con permisos de sudo.
@@ -83,6 +84,11 @@ void parseargs(int argc, char **argv){
             if(mlimit < 0)
                 quit("Limite de memoria invalido\n");
         }
+		if (strcmp(argv[i], "-nt") == 0){
+			nthreads = atoi(argv[i + 1]);
+            if(nthreads < 0)
+                quit("cantidad de threads invalida\n");
+        }
 	}
 }
 
@@ -112,7 +118,7 @@ int main(int argc, char **argv){
 
     if (access("./server", F_OK) == 0){
 		 //execl("/usr/bin/valgrind","/usr/bin/valgrind","./build/server", itos(text_socket), itos(bin_socket), NULL);
-        execl("./server" , "./server" , itos(text_socket) , itos(bin_socket), NULL); 
+        execl("./server" , "./server" , itos(text_socket) , itos(bin_socket) , itos(nthreads) ,  NULL); 
 	}else{
 		quit("El server no fue buildeado");
 	}

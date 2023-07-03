@@ -81,6 +81,15 @@ void *tryalloc(Hashtable *ht, unsigned bytes){
     return ret;
 }
 
+char *copycat(Hashtable *ht,char *s, int len){
+  char *c = tryalloc(ht , len);
+  if(c == NULL){
+    return NULL;
+  }
+  char_arr_cpy(c, s, len);
+  return c;
+}
+
 
 void updateLRU(Hashtable *ht, DNodo* elem){
 

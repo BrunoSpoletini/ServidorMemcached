@@ -44,7 +44,7 @@ int str_to_comm(char *str){
 
 int char_arr_cmp(char* str1, char* str2, int l){
 	for( int i = 0; i < l; i++ ){ 
-		if (str1[i] < str2[i])
+		if (str1[i] != str2[i])
 			return -1;
 	}
 	return 0;
@@ -56,12 +56,4 @@ void char_arr_cpy(char* str1, char* str2, int l){
 	}
 }
 
-char *copycat(Hashtable *ht,char *s, int len){
-  char *c = tryalloc(ht , len);
-  if(c == NULL){
-    return NULL;
-  }
-  char_arr_cpy(c, s, len);
-  return c;
-}
 

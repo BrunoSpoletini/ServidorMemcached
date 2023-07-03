@@ -22,55 +22,26 @@
 #include "utils.h"
 #include "reqHandler.h"
 
-/*
-Para inicializar la hash table:
-	HashTable table;
-	initHashTable(&table);
-
-	insert(&table, "apple", 1);
-
- * Para probar, usar netcat. Ej:
- *      $ nc localhost 3942
-
-Posibles mejoras:
-Hacer un sistema de salida, tanto para el cliente como para el serivdor.
-Para esto se puede usar pthread_exit(0);
-
-Checkeo de errores? Revisar
-
-Comentado de codigo
-
-Borrar comentarios de ayuda
-
-Mejorar el parseo del input
-
-Unificar todo a camelCase
-
-Arreglar el mutex del get
-
-El delete deberia devolver true o false si borro o no la clave
-
- */
-
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-//echo -n "\n" | echo -n "a" | echo -n " " | echo -n "T" | echo -n "U" | echo -n "P" | nc localhost 888
-
-Hashtable* hTable;
 
 void *wait_for_clients(void *threadParam)
 {
 	int events_count, epoll_fd, csock, textSock, binSock, event_fd;
 	eloop_data* data;
-	epoll_fd = ((int*)threadParam)[0];
-	textSock = ((int*)threadParam)[1];
-	binSock = ((int*)threadParam)[2];
+
+	Thread_data *tdata = threadParam;
+
+	epoll_fd = tdata->epollfd;
+	textSock = tdata->textSock;
+	binSock = tdata->binSock;
+	Hashtable *hTable = tdata->hTable;
+
 	struct epoll_event events[MAX_EVENTS];
 	while (1)
 	{
 		printf("soy un thread esperando data\n");
 		events_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
 		printf("soy un thread que paso\n");
+
 		for (int i = 0; i < events_count; i++){
 			data = ((eloop_data*)events[i].data.ptr);
 			event_fd = data->fd;
@@ -92,27 +63,30 @@ void *wait_for_clients(void *threadParam)
 
 int main(int argc, char **argv){
 
-	hTable =  create_table();
-	int textSock, binSock;
+	Hashtable* hTable =  create_table();
+	int textSock, binSock,nthreads;
 	textSock = atoi(argv[1]);
-	binSock = atoi(argv[2]); 
+	binSock = atoi(argv[2]);
+	nthreads = atoi(argv[3]);
 
 	int epoll = create_epoll();
-	int threadParam[3] = {epoll, textSock, binSock}; 
+
+	Thread_data *tdata = malloc(sizeof(Thread_data));
+	tdata->binSock = binSock;
+	tdata->epollfd = epoll;
+	tdata->textSock = textSock;
+	tdata->hTable = hTable;
 
 	agregarSocketEpoll(textSock, epoll);
 	agregarSocketEpoll(binSock, epoll);
 
-	pthread_t t[MAX_THREADS];
+	pthread_t t[nthreads];
 
-	for (int i = 0; i < MAX_THREADS; i++){
-		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)threadParam);
+	for (int i = 0; i < nthreads; i++){
+		pthread_create(&(t[i]), NULL, wait_for_clients, (void*)tdata);
 	}
 	
-
-	// Contemplar opcion de cerrar el servidor
-	//destruir_tabla(hTable);
-	for (int i = 0; i < MAX_THREADS; i++){
+	for (int i = 0; i < nthreads; i++){
 		pthread_join(t[i], NULL);
 	}
 

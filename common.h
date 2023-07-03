@@ -27,6 +27,18 @@ enum code {
 	EOOM = 116,
 };
 
+typedef struct{
+	int epollfd, textSock,binSock;
+	Hashtable *hTable;
+}Thread_data;
+
+ typedef struct Hashtable Hashtable;
+ typedef struct DList DList;
+ typedef struct DNodo DNodo;
+ typedef struct Stats Stats;
+ typedef struct Node Node;
+
+
 // Cierra el programa e imprime un mensaje de error
 void quit(char *s);
 
@@ -42,13 +54,5 @@ int char_arr_cmp(char* str1, char* str2, int l);
 // Compara dos arrays de caracteres del mismo largo
 void char_arr_cpy(char* str1, char* str2, int l);
 
-//devuelve una copia de un char* dado, o NULL si no hay memoria disponible. 
-char *copycat(Hashtable *ht,char *s, int len);
-
- typedef struct Hashtable Hashtable;
- typedef struct DList DList;
- typedef struct DNodo DNodo;
- typedef struct Stats Stats;
- typedef struct Node Node;
 
 #endif

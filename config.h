@@ -5,7 +5,7 @@
 
 /* Básico */
 // Número de threads que se crearán para manejar solicitudes de clientes
-#define MAX_THREADS 4
+#define DEFAULT_MAX_THREADS 4
 
 // Número de socket de texto por defecto
 #define DEFAULT_TEXT_SOCKET 888
