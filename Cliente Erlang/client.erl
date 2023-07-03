@@ -16,8 +16,8 @@
 
 test() -> {_,B} = start(),
 put(B,"clave","testdon
-    ereaawgfawgawgawgawawgasehgosjslekghjwslieghlsejnmhlskjmhlkñdrjmhldkjmholpdreehljsdlrhkldrhmldmñrtjlgawgawgawgawgdn"),
-get(B,"clave").
+    ereaawgfawgawgawgawawgasehgosjslekghjwslieghlsejnmhlskjmhlkñdrjmhldkjmholpdreehljsdlrhkldrhmldmrtjlgawgawgawgawgdn").
+%get(B,"clave").
 
 decode(Code) ->
     case Code of
