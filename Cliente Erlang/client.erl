@@ -17,7 +17,7 @@
 test(K) ->
     if K>0 ->
         {_,S} = start(),
-        spawn(fun() -> stressTest(S, 100) end),
+        spawn(fun() -> stressTest(S, 10000) end),
         test(K-1);
     true -> ok
     end.

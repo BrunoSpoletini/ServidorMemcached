@@ -48,9 +48,9 @@ void *wait_for_clients(void *threadParam)
 					quit("Fallo al aceptar un cliente");
 				} else {
 					agregarClienteEpoll(csock, epoll_fd, (event_fd==binSock) + 1, NULL, hTable);
+					agregarSocketEpoll(event_fd, epoll_fd, 0);
 				}
 			} else {
-
 				handleConn(data);
 			}
 		}
@@ -75,8 +75,8 @@ int main(int argc, char **argv){
 	tdata->textSock = textSock;
 	tdata->hTable = hTable;
 
-	agregarSocketEpoll(textSock, epoll);
-	agregarSocketEpoll(binSock, epoll);
+	agregarSocketEpoll(textSock, epoll, 1);
+	agregarSocketEpoll(binSock, epoll, 1);
 
 	pthread_t t[nthreads];
 

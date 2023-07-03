@@ -19,7 +19,7 @@ typedef struct _eloop_data {
 void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Hashtable* hTable);
 
 /* Registra un socket a la lista de escucha de epoll */
-void agregarSocketEpoll(int sock, int epoll_fd);
+void agregarSocketEpoll(int sock, int epoll_fd, int init);
 
 /* Crea una instancia de epoll */
 int create_epoll();
