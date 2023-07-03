@@ -28,7 +28,7 @@ int lsock_tcp(int port)
 	if (rc < 0)
 		quit("bind");
 
-	rc = listen(lsock, MAX_CLIENTS);
+	rc = listen(lsock, MAX_CLIENTS_QUEUE);
 	if (rc < 0)
 		quit("listen");
 

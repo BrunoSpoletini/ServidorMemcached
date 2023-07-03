@@ -74,7 +74,7 @@ void *wait_for_clients(void *threadParam)
 		for (int i = 0; i < events_count; i++){
 			data = ((eloop_data*)events[i].data.ptr);
 			event_fd = data->fd;
-			if ( (event_fd == textSock) || (event_fd == binSock) ){
+			if ( (event_fd == textSock)|| (event_fd == binSock) ){
 				csock = accept(event_fd, NULL, NULL);
 				if (csock == -1){
 					quit("Fallo al aceptar un cliente");

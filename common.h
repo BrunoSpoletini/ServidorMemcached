@@ -6,16 +6,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#define MAX_EVENTS 256
+#include "config.h"
+
 #define READ_SIZE 2048
-#define MAX_CLIENTS 256
-#define TIMEOUT 100
-#define MAX_THREADS 4
 #define MSG_SIZE 2048
-#define DEFAULT_TEXT_SOCKET 888
-#define DEFAULT_BIN_SOCKET 889
-#define DEFAULT_MEM_LIMIT 60*1000000  ///  60MB
-#define TABLESIZE 50000
 
 enum code {
 	PUT = 11,
@@ -49,13 +43,9 @@ int char_arr_cmp(char* str1, char* str2, int l);
 void char_arr_cpy(char* str1, char* str2, int l);
 
  typedef struct Hashtable Hashtable;
-
-
  typedef struct DList DList;
  typedef struct DNodo DNodo;
  typedef struct Stats Stats;
  typedef struct Node Node;
-
-
 
 #endif
