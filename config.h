@@ -21,7 +21,7 @@
 
 /* Avanzado */
 // Numero máximo de eventos que devolverá epoll_wait
-#define MAX_EVENTS 50000
+#define MAX_EVENTS 500000
 // Numero máximo de clientes que pueden estar esperando para conectarse al servidor
 #define MAX_CLIENTS_QUEUE 10000
 

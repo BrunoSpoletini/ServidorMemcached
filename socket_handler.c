@@ -63,19 +63,30 @@ void agregarClienteEpoll(int cliente, int epoll_fd, int init, void *dataPtr, Has
 	}
 }
 
-void agregarSocketEpoll(int sock, int epoll_fd){
+void agregarSocketEpoll(int sock, int epoll_fd, int init){
 	struct epoll_event ev;
-	ev.events = EPOLLIN;
+	ev.events = EPOLLIN | EPOLLONESHOT;
 	eloop_data *eloop = malloc(sizeof(eloop_data));
 	ev.data.ptr = eloop;
 	((eloop_data*)ev.data.ptr)->fd = sock;
 	((eloop_data*)ev.data.ptr)->epfd = epoll_fd;
 
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock, &ev))
-	{
-		close(epoll_fd);
-		quit("Fallo al agregar fd a epoll\n");
+	if( init == 1){
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock, &ev))
+		{
+			close(epoll_fd);
+			quit("Fallo al agregar fd a epoll\n");
+		}
+	} else {
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, sock, &ev))
+		{
+			close(epoll_fd);
+			quit("Fallo al agregar fd a epoll\n");
+		}
 	}
+
+
+
 }
 
 void desconectarCliente(eloop_data* data){
