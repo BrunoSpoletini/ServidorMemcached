@@ -6,6 +6,7 @@
 #include <sys/resource.h>
 #include "common.h"
 #include "utils.h"
+#include "socket_handler.h"
 
 int tsocket = DEFAULT_TEXT_SOCKET;
 int bsocket = DEFAULT_BIN_SOCKET;
@@ -18,35 +19,29 @@ Seteamos el limite de memoria,
 Luego, levantamos los sockets, bajamos privilegios, y pasamos al server los sockets.
 */
 
-int mk_lsock(int port){
-
+int lsock_tcp(int port)
+{
 	struct sockaddr_in sa;
 	int lsock;
 	int rc;
 	int yes = 1;
 
-	/* Crear socket */
 	lsock = socket(AF_INET, SOCK_STREAM, 0);
 	if (lsock < 0)
 		quit("socket");
 
-	/* Setear opción reuseaddr... normalmente no es necesario */
 	if (setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == 1)
 		quit("setsockopt");
 
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(port); /// este puerto solo se puede bindear siendo root.
+	sa.sin_port = htons(port);
 	sa.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	/* Bindear al puerto port TCP, en todas las direcciones disponibles */
 	rc = bind(lsock, (struct sockaddr *)&sa, sizeof sa);
 	if (rc < 0)
 		quit("bind");
 
-	/* Setear en modo escucha */
-	rc = listen(lsock, 10);
-	if (rc < 0)
-		quit("listen");
+	rc = listen(lsock, MAX_CLIENTS_QUEUE);
 
 	return lsock;
 }
@@ -100,8 +95,8 @@ int main(int argc, char **argv){
 	if (uid != 0)
 		quit("Se necesitan permisos de root.");
 
-	int text_socket = mk_lsock(tsocket);
-	int bin_socket = mk_lsock(bsocket);
+	int text_socket = lsock_tcp(tsocket);
+	int bin_socket = lsock_tcp(bsocket);
 
 	struct rlimit *rlimits = malloc(sizeof(struct rlimit));
 	rlimits->rlim_cur = mlimit;		

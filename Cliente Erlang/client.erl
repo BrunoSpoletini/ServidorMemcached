@@ -1,6 +1,6 @@
 -module(client).
 
--export([start/0, start/1, put/3, del/2, get/2, stats/1, close/1, test/0]).
+-export([start/0, start/1, put/3, del/2, get/2, stats/1, close/1, test/1, stressTest/2]).
 
 -define(PUT, 11).
 -define(DEL, 12).
@@ -14,10 +14,19 @@
 -define(EUNK, 115).
 -define(EOOM, 116).
 
-test() -> {_,B} = start(),
-put(B,"clave","testdon
-    ereaawgfawgawgawgawawgasehgosjslekghjwslieghlaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaasejnmhlskjmhldrjmhldkjmholpdreehljsdlrhkldrhmldmrtjlgawgawgawgawgdn"),
-get(B,"clave").
+test(K) ->
+    if K>0 ->
+        {_,S} = start(),
+        spawn(fun() -> stressTest(S, 100) end),
+        test(K-1);
+    true -> ok
+    end.
+
+stressTest(S, N) ->
+    if N > 0 -> put(S,"clave"++integer_to_list(N) ++ S,"valor"),
+                stressTest(S, N-1);
+        true -> ok
+    end.
 
 decode(Code) ->
     case Code of
@@ -84,11 +93,11 @@ del_(Sock, K) ->
 get_(Sock, K) ->
     gen_tcp:send(Sock, encode_cmd(?GET, K)),
     
-    parse(Sock, fun(Bin) ->list_to_atom(binary_to_list(Bin))end).
+    parse(Sock, fun(Bin) ->binary_to_list(Bin) end).
 
 stats_(Sock) ->
     gen_tcp:send(Sock, <<?STATS>>),
-    parse(Sock, fun(Bin) ->list_to_atom(binary_to_list(Bin))end).
+    parse(Sock, fun(Bin) ->binary_to_list(Bin) end).
     %parse(Sock, fun binary_to_list/1).
 
 close_(Sock) ->

@@ -5,7 +5,7 @@
 
 /* Básico */
 // Número de threads que se crearán para manejar solicitudes de clientes
-#define DEFAULT_MAX_THREADS 4
+#define DEFAULT_MAX_THREADS 8
 
 // Número de socket de texto por defecto
 #define DEFAULT_TEXT_SOCKET 888
@@ -14,15 +14,15 @@
 #define DEFAULT_BIN_SOCKET 889
 
 // Limite de memoria del servidor por defecto
-#define DEFAULT_MEM_LIMIT 6000*1000000ull  ///  60MB
+#define DEFAULT_MEM_LIMIT 6000*1000000ull  ///  6GB
 
 // Tamaño de la tabla hash
 #define TABLESIZE 50000
 
 /* Avanzado */
 // Numero máximo de eventos que devolverá epoll_wait
-#define MAX_EVENTS 256
+#define MAX_EVENTS 50000
 // Numero máximo de clientes que pueden estar esperando para conectarse al servidor
-#define MAX_CLIENTS_QUEUE 256
+#define MAX_CLIENTS_QUEUE 10000
 
 #endif

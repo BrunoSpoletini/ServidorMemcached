@@ -5,7 +5,6 @@
 void handleConn(eloop_data* data)
 {	
 	int rc = data->isText? fd_readline_texto(data) : fd_readline_bin(data);
-	
 	 if ( rc > 0 ){
 		agregarClienteEpoll(data->fd, data->epfd, 0, (void*)data, data->hTable);
 	} else {
@@ -144,7 +143,6 @@ int parseLineText(eloop_data* data, char* buff, char** req){
 		req[i] = NULL;
 		token = strtok(NULL, " \n");
 	}
-	printf("Words: [%d]\n", words);
 	if (words > 0 && words <= 3 && validateReq(data, words))
 		return 1;
 	return 0;
@@ -156,16 +154,11 @@ int fd_readline_texto(eloop_data* data)
 	char buffer[READ_SIZE+2];
 	strcpy(buffer, data->buff);
 	int rc = read(data->fd, buffer + data->buffSize, READ_SIZE - (data->buffSize)  );
-	//printf("Se llama a readline\n");
 	if (rc > 0){
-		//printf("Se lee: [");
-		//for(int k=0; k<(rc+data->buffSize); k++){printf("%c", buffer[k]);}
-		//printf("]\n");
 		buffer[data->buffSize + rc] = '\0';
 		while ( conectado && (i <= rc) ){ // Recorremos la cadena recibida
 
 			if ( (buffer[data->buffSize+i] < 32 && buffer[data->buffSize+i] != 10 && buffer[data->buffSize+i] != 13 && buffer[data->buffSize+i] != 0) || 126 < buffer[data->buffSize+i]){
-				//printf("Caracter no imprimible: %d, en el i; %d\n", buffer[data->buffSize+i], i);
 				data->notPrintable = 1;
 			}
 			if ( buffer[data->buffSize+i] == '\n' ){
@@ -182,7 +175,7 @@ int fd_readline_texto(eloop_data* data)
 						if(req == NULL){
 							write(data->fd, "EOOM\n", 5);
 							i++;
-							continue; /// esta bien manejado este caso?
+							continue; 
 						}
 
 						switch ( parseLineText(data, buffer + linea, req) )
@@ -214,8 +207,6 @@ int fd_readline_texto(eloop_data* data)
 			
 			i++;
 		}
-		//printf("Linea: %d, RC: %d\n", linea, rc);
-		//printf("Copiamos: '%s' en data->buff\n", buffer + linea);
 		strcpy(data->buff, buffer + linea);
 		data->buffSize = rc + data->buffSize - linea;
 		data->buff[data->buffSize] = '\0';
@@ -336,7 +327,6 @@ int fd_readline_bin(eloop_data* data){
 	char buffL[READ_SIZE+1];
 	int rc = 0;
 	rc = read(data->fd, buffL, READ_SIZE);
-	printf("saliendo de leer, RC = %d\n", rc);
 	if (rc > 0){
 		for (int i = 0; i < rc; i++ ){
 			switch (etapaBin( data ))

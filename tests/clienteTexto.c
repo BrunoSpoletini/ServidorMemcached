@@ -89,12 +89,10 @@ int main()
 		nanosleep(&tsp, NULL);
 	}
 
-
-
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 100000; i++) {
 
 		int rc = 0;
-		sprintf(buffer2,"PUT C%d %d\nAWDS\nGET C%d\nPUT clave val\n", i+430, i+430,i+430);
+		sprintf(buffer2,"PUT C%d %d\n", i+430,i+430);
 		cto = strlen(buffer2);
 
 #if 1
@@ -116,14 +114,14 @@ int main()
 		}
 #endif
 
-		printf("\nLlegamos a la parte de las respuestas\n");
+		//printf("\nLlegamos a la parte de las respuestas\n");
 
 		// ok
 
 		int index = 0;
 		int voy = 0;
 
-		while(voy != 4){
+		while(voy != 1){
 
 			cto = read(sock[0], buffer+index, (sizeof(buffer) - 1) - index);
 
@@ -136,7 +134,7 @@ int main()
 				if(buffer[j] == '\n'){
 					//printf("encontre \n en indice %d\n",j);
 					buffer[j] = 0;
-					printf("respuesta #%d: \n",voy);
+					//printf("respuesta #%d: \n",voy);
 					int desde = j-1;
 					for(int k = j-1; k >= 0; k--){
 						if(buffer[k] == 0){
@@ -144,7 +142,7 @@ int main()
 						}
 						desde = k;
 					}
-					printf("%s\n", (buffer+desde) );
+					//printf("%s\n", (buffer+desde) );
 					voy++;
 				}
 			}
