@@ -11,7 +11,7 @@ Hashtable *create_table() {
     ht->LRU = dlist_crear();
     pthread_mutex_init(&ht->locklru, NULL);
 
-  ht->stats = create_stats();
+  ht->stats = create_stats(ht);
 
   return ht;
 }

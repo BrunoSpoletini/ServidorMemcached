@@ -42,13 +42,26 @@ void processReq(eloop_data* data, char** req){
 		Stats* snapshot = create_stats(data->hTable);
 		int ret = snapshot_stats( data->hTable, snapshot);
 		if(ret != OK){
-
+			writeSock(data, ret, true);
 		}else{
-			
-		}
 
-		printf("Stat\n");
-		//do stuff
+			char *str = tryalloc(data->hTable, sizeof(char) * (24 + 4 * 18) ); /// cada valor puede ser de hasta 18 caracteres.
+			sprintf(str, "PUTS=%lld DELS=%lld GETS=%lld KEYS=%lld", snapshot->puts, snapshot->dels, snapshot->gets, snapshot->keys);
+			int size = strlen(str);
+
+			if ( data->isText ){
+				//OK VAL \n
+				writeSock(data, ret, false);
+				write(data->fd, str, size);
+				write(data->fd, "\n", 1);
+			} else {
+				//OK TAM VAL
+				writeSock(data, ret, false);
+				int val = htonl(size);
+				write( data->fd, &val, 4 );
+				write(data->fd, str, size);
+			}
+		}
 	} 
 	else if (( data->comm == DEL ) && req[1] == NULL)
 	{

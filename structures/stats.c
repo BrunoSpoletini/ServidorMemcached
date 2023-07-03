@@ -56,10 +56,10 @@ void del_key(Stats *s){
 int snapshot_stats(Hashtable *ht, Stats* snapshot){
     Stats *s = ht->stats;
     pthread_mutex_lock(&s->lock);
-    snapshot->dels = s->gets;
-    snapshot->puts = s->gets;
+    snapshot->dels = s->dels;
+    snapshot->puts = s->puts;
     snapshot->gets = s->gets;
-    snapshot->keys = s->gets;
+    snapshot->keys = s->keys;
     pthread_mutex_unlock(&s->lock);
     return OK;
 }
