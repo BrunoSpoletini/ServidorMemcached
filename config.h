@@ -5,7 +5,7 @@
 
 /* Básico */
 // Número de threads que se crearán para manejar solicitudes de clientes
-#define DEFAULT_MAX_THREADS 8
+#define DEFAULT_MAX_THREADS 4
 
 // Número de socket de texto por defecto
 #define DEFAULT_TEXT_SOCKET 888
@@ -14,7 +14,7 @@
 #define DEFAULT_BIN_SOCKET 889
 
 // Limite de memoria del servidor por defecto
-#define DEFAULT_MEM_LIMIT 6000*1000000ull  ///  6GB
+#define DEFAULT_MEM_LIMIT 600*1000000ull  ///  6GB
 
 // Tamaño de la tabla hash
 #define TABLESIZE 50000

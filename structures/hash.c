@@ -45,8 +45,6 @@ bool evict(Hashtable *ht){
 
     if( pthread_mutex_trylock( &ht->rlock[data->hash]) == 0 ){
 
-      printf("EVICT: eliminamos el nodo con key = %s, valor = %s\n",data->key,data->value);
-
       dlist_eliminar_nodo(ht->row[data->hash], node->othernode, destroy_node);
       dlist_eliminar_nodo(ht->LRU, node, dummyfree); /// el nodo de la LRU.
       del_key(ht->stats);
@@ -68,9 +66,7 @@ void *tryalloc(Hashtable *ht, unsigned bytes){
 
     void *ret;
     while( (ret = malloc(bytes)) == NULL ){
-    printf("\n\n\nLLAMADA A EVICT\n\n\nLLAMADA A EVICT\n\n\n");
       if( !evict(ht) ){
-        printf("DEVOLVIMOS NULL A ALGUIEN. SE ROMPE TODO!!!! (se deberia devolver EOOM)\n");
         return NULL;
       }
     }

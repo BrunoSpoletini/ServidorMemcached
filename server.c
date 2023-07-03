@@ -22,12 +22,6 @@
 #include "reqHandler.h"
 
 
-int c=0;
-
-static inline void inclLock(int *p) {
-asm("lock; incl %0" : "+m"(*p) : : "memory");
-}
-
 void *wait_for_clients(void *threadParam)
 {
 	int events_count, epoll_fd, csock, textSock, binSock, event_fd;
@@ -48,7 +42,6 @@ void *wait_for_clients(void *threadParam)
 
 			data = ((eloop_data*)events[i].data.ptr);
 			event_fd = data->fd;
-inclLock(&c);printf("%d\n",c);
 			if ( (event_fd == textSock) || (event_fd == binSock) ){
 				csock = accept(event_fd, NULL, NULL);
 				if (csock == -1){
