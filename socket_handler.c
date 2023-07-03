@@ -109,15 +109,15 @@ void agregarSocketEpoll(int sock, int epoll_fd){
 
 void desconectarCliente(eloop_data* data){
 
-	if(data->buff != NULL){
-		free(data->buff);
-	}
-	if(data->value != NULL){
-		free(data->value);	
-	}
-	if(data->key != NULL){
-		free(data->key);
-	}
-	close(data->fd);
-	free(data);
+	// if(data->buff != NULL){
+	// 	free(data->buff);
+	// }
+	// if(data->value != NULL){
+	// 	free(data->value);	
+	// }
+	// if(data->key != NULL){
+	// 	free(data->key);
+	// }
+	// close(data->fd);
+	// free(data);
 }

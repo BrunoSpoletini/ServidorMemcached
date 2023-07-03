@@ -355,13 +355,16 @@ int fd_readline_bin(eloop_data* data){
 				data->value[data->cont - data->keySize - 9] = buffL[i];
 				break;
 			default:
-				return -1;
+				//return -1;
+				printf("default");
 			}
 			data->cont++;
 
 			if (i == (rc-1)) {
-				if (parseBin(data) == -1)
-					return -1;
+				if (parseBin(data) == -1){
+					printf("test");
+					//return -1;
+				}
 			}
 		}
 	}

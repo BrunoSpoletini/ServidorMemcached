@@ -27,17 +27,17 @@ enum code {
 	EOOM = 116,
 };
 
+typedef struct Hashtable Hashtable;
+
 typedef struct{
 	int epollfd, textSock,binSock;
 	Hashtable *hTable;
 }Thread_data;
 
- typedef struct Hashtable Hashtable;
  typedef struct DList DList;
  typedef struct DNodo DNodo;
  typedef struct Stats Stats;
  typedef struct Node Node;
-
 
 // Cierra el programa e imprime un mensaje de error
 void quit(char *s);
