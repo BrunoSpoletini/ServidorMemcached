@@ -65,8 +65,6 @@ int main(int argc, char **argv){
 	binSock = atoi(argv[2]);
 	nthreads = atoi(argv[3]);
 
-
-
 	int epoll = create_epoll();
 
 	Thread_data *tdata = malloc(sizeof(Thread_data));

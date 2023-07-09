@@ -109,6 +109,22 @@ int main(int argc, char **argv){
 	if (!std_down_privileges())
         quit("No se pueden bajar los privilegios.\n");  
 
+	struct rlimit lim;
+    lim.rlim_cur = 1000000;
+    lim.rlim_max = 1000000;
+	system ("ulimit -n");
+	printf("antes del cambio\n");
+	setrlimit(RLIMIT_NOFILE, &lim);
+	printf("desp del cambio\n");
+	system ("ulimit -n");
+
+/*
+1024
+antes del cambio
+desp del cambio
+1000000
+*/
+
     if (access("./server", F_OK) == 0){
         execl("./server" , "./server" , itos(text_socket) , itos(bin_socket) , itos(nthreads) ,  NULL); 
 	}else{

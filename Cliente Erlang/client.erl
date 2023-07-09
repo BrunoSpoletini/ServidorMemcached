@@ -16,8 +16,12 @@
 
 test(K) ->
     if K>0 ->
-        {_,S} = start(),
-        spawn(fun() -> stressTest(S, 10000) end),
+
+        case start() of
+            {ok, Conn} -> spawn(fun() -> stressTest(Conn, 1000) end);
+            {error, _} -> io:fwrite("error al conectarse al puerto~n")
+        end,
+
         test(K-1);
     true -> ok
     end.
